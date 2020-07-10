@@ -34,10 +34,6 @@ class Application(tornado.web.Application):
 class BaseHandler(tornado.web.RequestHandler):
     def __init__(self, *args):
         tornado.web.RequestHandler.__init__(self, *args)
-        
-import time  
-async def mysleep():
-      return await asyncio.sleep(5)
 
 class MainHandler(BaseHandler):
   #logging stuff..
@@ -56,19 +52,17 @@ class MainHandler(BaseHandler):
   app_log.addHandler(hdlr)
   gen_log.addHandler(hdlr)
   
-  executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+  #executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
   
 
       
   
-  async def post(self):
+  def post(self):
     algorithm = self.get_argument("algorithm")
     params = self.get_argument("params")
 
     try:
-      #result = await mysleep()
-      #result = "lala"
-      result = await run_algorithm.run(algorithm,params, settings.global_node, settings.local_nodes)
+      result = run_algorithm.run(algorithm,params, settings.global_node, settings.local_nodes)
     except AlgorithmException as e:
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))

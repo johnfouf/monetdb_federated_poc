@@ -8,7 +8,7 @@ def local_run_inparallel(local,query):
     local.cmd(query)
 
 
-async def createlocalviews(local_nodes, viewlocaltable, params):
+def createlocalviews(local_nodes, viewlocaltable, params):
       threads = []
       params = json.loads(params)
       ### todo check tables and attributes to avoid sql injection, run filters
@@ -21,7 +21,7 @@ async def createlocalviews(local_nodes, viewlocaltable, params):
           t.join()
 
 
-async def run_local_init(local_nodes,localtable, algorithm, viewlocaltable):
+def run_local_init(local_nodes,localtable, algorithm, viewlocaltable):
       threads = []
       
       for i,local in enumerate(local_nodes):
@@ -33,7 +33,7 @@ async def run_local_init(local_nodes,localtable, algorithm, viewlocaltable):
           t.join()
           
 
-async def run_local(local_nodes,localtable, algorithm, viewlocaltable):
+def run_local(local_nodes,localtable, algorithm, viewlocaltable):
       threads = []
       
       for i,local in enumerate(local_nodes):
@@ -45,7 +45,7 @@ async def run_local(local_nodes,localtable, algorithm, viewlocaltable):
           t.join()
           
           
-async def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, viewlocaltable):
+def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, viewlocaltable):
       threads = []
       
       for i,local in enumerate(local_nodes):
@@ -58,7 +58,7 @@ async def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, vi
      
 
       
-async def run_global_final(global_node, globaltable, algorithm):
+def run_global_final(global_node, globaltable, algorithm):
       con = pymonetdb.connect(username="monetdb", password="monetdb",port=50000,hostname="127.0.0.1", database=global_node[1])
       cur = con.cursor()
       cur.execute(algorithms.count_global(globaltable))
@@ -68,20 +68,20 @@ async def run_global_final(global_node, globaltable, algorithm):
       return result
       #return global_node[0].cmd("s"+algorithms.count_global(globaltable))
       
-async def run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable):
+def run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable):
       global_node[0].cmd("sdrop table if exists %s;" %globalresulttable)
       global_node[0].cmd("s"+algorithms.count_global_iter(globaltable, globalresulttable))
       print(global_node[0].cmd("sselect * from %s;" %globalresulttable))
-      await partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable)
+      partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable)
 
-async def partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable):
+def partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable):
     global_node[0].cmd("sdrop table if exists %s;" %globaltable)
     for i,local in enumerate(local_nodes):
           local[0].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
           global_node[0].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
 
     
-async def clean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable, globalrestable):
+def clean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable, globalrestable):
       global_node[0].cmd("sdrop table if exists %s;" %globaltable)
       global_node[0].cmd("sdrop table if exists %s;" %globalrestable)
       for i,local in enumerate(local_nodes):
