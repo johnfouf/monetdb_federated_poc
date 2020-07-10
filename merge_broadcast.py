@@ -1,5 +1,4 @@
 def merge(global_node, local_nodes, localtable, globaltable):
-    
     global_node.cmd("sDROP TABLE IF EXISTS %s;" %globaltable);
     global_node.cmd("sCREATE MERGE TABLE %s (c1 int);" %globaltable);
     for i,local_node in enumerate(local_nodes):
@@ -11,14 +10,14 @@ def merge(global_node, local_nodes, localtable, globaltable):
         
 def broadcast(global_node, local_nodes, globalresulttable):
     for i,local_node in enumerate(local_nodes):
-        local_node[0].cmd("sDROP TABLE IF EXISTS %s;" %globalresulttable)
-        local_node[0].cmd("sCREATE REMOTE TABLE %s (c1 int) on 'mapi:monetdb://127.0.0.1:50000/%s';" %(globalresulttable, global_node))
+        local_node[2].cmd("sDROP TABLE IF EXISTS %s;" %globalresulttable)
+        local_node[2].cmd("sCREATE REMOTE TABLE %s (c1 int) on 'mapi:monetdb://127.0.0.1:50000/%s';" %(globalresulttable, global_node))
 
         
         
 def transferdirect(node1, localtable, node2):
-    node2[0].cmd("sDROP TABLE IF EXISTS %s;" %localtable)
-    node2[0].cmd("sCREATE REMOTE TABLE %s (c1 int) on 'mapi:monetdb://127.0.0.1:50000/%s';" %(localtable, node1[1]))
+    node2[2].cmd("sDROP TABLE IF EXISTS %s;" %localtable)
+    node2[2].cmd("sCREATE REMOTE TABLE %s (c1 int) on 'mapi:monetdb://127.0.0.1:50000/%s';" %(localtable, node1[1]))
         
  
         

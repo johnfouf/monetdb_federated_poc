@@ -1,27 +1,30 @@
-import tornado.web
-from threading import Thread
-from tornado import gen 
-from tornado.log import enable_pretty_logging
-from tornado.options import define, options
+
 import logging
 import pymonetdb
 import sys
 import settings
 import json
 import asyncio
-from tornado.concurrent import run_on_executor
-from concurrent.futures import ThreadPoolExecutor
 import run_algorithm
+import tornado.web
+from threading import Thread
+from tornado import gen 
+from tornado.log import enable_pretty_logging
+from tornado.options import define, options
+
+
 MAX_WORKERS = 4
     
 PROCESSES_PER_CPU = 2
-WEB_SERVER_PORT=9999
+WEB_SERVER_PORT=7779
+define("port", default=WEB_SERVER_PORT, help="run on the given port", type=int)
+
 
 class AlgorithmException(Exception):
     def __init__(self,message):
       super(AlgorithmException,self).__init__(message)
 
-define("port", default=WEB_SERVER_PORT, help="run on the given port", type=int)
+
 
 
 class Application(tornado.web.Application):
@@ -37,7 +40,9 @@ class BaseHandler(tornado.web.RequestHandler):
         
 import time  
 async def mysleep():
-      return await asyncio.sleep(5)
+      await asyncio.sleep(5)
+      await asyncio.sleep(5)
+
 
 class MainHandler(BaseHandler):
   #logging stuff..
@@ -56,35 +61,38 @@ class MainHandler(BaseHandler):
   app_log.addHandler(hdlr)
   gen_log.addHandler(hdlr)
   
-  executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+  
+  #executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
   
 
-      
-  
   async def post(self):
     algorithm = self.get_argument("algorithm")
     params = self.get_argument("params")
-
+    global_node, local_nodes = await settings.initialize(sys.argv)
     try:
-      #result = await mysleep()
-      #result = "lala"
-      result = await run_algorithm.run(algorithm,params, settings.global_node, settings.local_nodes)
+      result = await run_algorithm.run(algorithm,params, global_node, local_nodes)
+      self.write("{}".format(result))
     except AlgorithmException as e:
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
+      await settings.disconnect(global_node, local_nodes)
+      
       self.set_status(500)
       self.write(str(e))
       self.finish()
       return
     
+    await settings.disconnect(global_node, local_nodes)
     self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
-    self.write("{}".format(result))
+    #self.write("{}".format(result))
     
     self.finish()
 
-def main(args):
-    settings.initialize(args)
+
+
+
+def main(args):   
     sockets = tornado.netutil.bind_sockets(options.port)
     #tornado.process.fork_processes(tornado.process.cpu_count() * PROCESSES_PER_CPU)
     server = tornado.httpserver.HTTPServer(Application())
