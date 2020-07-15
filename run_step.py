@@ -4,22 +4,64 @@ import pymonetdb
 import json
 import asyncio
 import parse_mapi_result
+from pymonetdb.sql import monetize, pythonize
 
  
+def bind(operation, parameters):
+  if parameters:
+    if isinstance(parameters, dict):
+        query = operation % {k: monetize.convert(v) for (k, v) in parameters.items()}
+    elif type(parameters) == list or type(parameters) == tuple:
+        query = operation % tuple([monetize.convert(item) for item in parameters])
+    elif isinstance(parameters, str):
+        query = operation % monetize.convert(parameters)
+    else:
+        msg = "Parameters should be None, dict or list, now it is %s"
+  else:
+        query = operation
+  return query
+
 
 @asyncio.coroutine
 async def local_run_inparallel(local,query):
     #await asyncio.sleep(0)
     await local.cmd(query)
     
-    
+
 
 async def createlocalviews(local_nodes, viewlocaltable, params):
       params = json.loads(params)
-      await asyncio.sleep(0)
+      
+      ####### do it  in parallel, check if dataset exists #########
       for i,local in enumerate(local_nodes):
-           local[2].cmd("sCREATE VIEW %s AS select * from data;" %viewlocaltable)
-
+           result = parse_mapi_result.parse(await local[0].cmd(bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
+           if result == []:
+               raise Exception('Dataset does not exist in all local nodes')
+      #############################################################
+      
+       ####### do it  in parallel, check if attributes exist #########
+      for i,local in enumerate(local_nodes):
+        for attribute in params['attributes']:
+           attr = parse_mapi_result.parse(await local[0].cmd(bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
+           if attr == []:
+               raise Exception('Attribute '+attribute+' does not exist in all local nodes')
+        for attribute in params['filters']:
+           attr = parse_mapi_result.parse(await local[0].cmd(bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
+           if attr == []:
+               raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
+      #############################################################
+      
+      filterpart = " "
+      vals = []
+      for i,filt in enumerate(params["filters"]):
+          if filt[1] not in [">","<","<>",">=","<=","="]:
+              raise Exception('Operator '+filt[1]+' not valid')
+          filterpart += filt[0] + filt[1] + "%s"
+          vals.append(filt[2]) 
+          if i < len(params["filters"])-1:
+              filterpart += ' and '
+      for i,local in enumerate(local_nodes):
+           local[2].cmd(bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
 
 
 @asyncio.coroutine
