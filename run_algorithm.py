@@ -2,14 +2,15 @@ import datetime
 import random
 import run_step
 import transfer_data
+import json
 
 def get_uniquetablename():
       return 'user{0}'.format(datetime.datetime.now().microsecond + (random.randrange(1, 100+1) * 100000))
 
-async def run_simple(algorithm, params, global_node, local_nodes, localtable, globaltable, viewlocaltable, globalresulttable):
+async def run_simple(algorithm, params, global_node, local_nodes, localtable, globaltable, viewlocaltable, globalresulttable, localschema):
       try:
-          await run_step.run_local(local_nodes,localtable, algorithm, viewlocaltable)
-          await transfer_data.merge(global_node, local_nodes, localtable, globaltable)
+          await run_step.run_local(local_nodes,localtable, algorithm, viewlocaltable, localschema)
+          await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
           result = await run_step.run_global_final(global_node, globaltable, algorithm)
       except:
           await run_step.clean_up(global_node,local_nodes, globaltable,localtable,viewlocaltable, globalresulttable )
@@ -18,23 +19,23 @@ async def run_simple(algorithm, params, global_node, local_nodes, localtable, gl
       return result
       
       
-async def run_iterative(algorithm, global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable):
+async def run_iterative(algorithm, global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable, localschema, globalschema):
       j = 0
       try:
-          await run_step.run_local_init(local_nodes,localtable, algorithm, viewlocaltable)
+          await run_step.run_local_init(local_nodes,localtable, algorithm, viewlocaltable, localschema)
           j+=1
           for i in range(20):
-              await transfer_data.merge(global_node, local_nodes, localtable, globaltable)
+              await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
 
-              await run_step.run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable)
+              await run_step.run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema)
               j+=1
 
-              await transfer_data.broadcast(global_node, local_nodes, globalresulttable)
+              await transfer_data.broadcast(global_node, local_nodes, globalresulttable, globalschema)
 
-              await run_step.run_local_iter(local_nodes,localtable, globalresulttable, algorithm, viewlocaltable)
+              await run_step.run_local_iter(local_nodes,localtable, globalresulttable, algorithm, viewlocaltable, localschema)
               j+=1
 
-          await transfer_data.merge(global_node, local_nodes, localtable, globaltable)
+          await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
           result = await run_step.run_global_final(global_node, globaltable, algorithm)
           j+=1
           print(j)
@@ -58,9 +59,18 @@ async def run(algorithm, params, global_node, local_nodes):
       ## create viewlocaltable with params
       await run_step.createlocalviews(local_nodes, viewlocaltable,params)
       ### check algorithm category
+      ### get schema of intermediate tables
+      
 
-      #result  = await run_simple(algorithm, params, global_node, local_nodes, localtable, globaltable, viewlocaltable, globalresulttable)
-      result =  await run_iterative(algorithm,global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable)
+      with open('schema.json') as json_file:
+          data = json.load(json_file)
+      
+      for c,algo in enumerate([ data['algorithms'][i]['name'] for i,j in enumerate(data['algorithms'])]):
+          if algorithm == algo:
+              if data['algorithms'][c]['type'] == 'simple':
+                  result  = await run_simple(algorithm, params, global_node, local_nodes, localtable, globaltable, viewlocaltable, globalresulttable, data['algorithms'][c]['local_schema'])
+              elif  data['algorithms'][c]['type'] == 'multiple':
+                  result =  await run_iterative(algorithm,global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable, data['algorithms'][c]['local_schema'], data['algorithms'][c]['global_schema'])
       return result
       
       

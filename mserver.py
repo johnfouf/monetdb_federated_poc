@@ -61,9 +61,6 @@ class MainHandler(BaseHandler):
   app_log.addHandler(hdlr)
   gen_log.addHandler(hdlr)
   
-  
-  #executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
-  
 
   async def post(self):
     algorithm = self.get_argument("algorithm")
