@@ -5,7 +5,6 @@ import pymonetdb
 import json
 import asyncio
 import parse_mapi_result
-from pymonetdb.sql import monetize, pythonize
 
 def getpackage(algorithm):
     mpackage = "algorithms"
@@ -13,44 +12,25 @@ def getpackage(algorithm):
     algo = importlib.import_module("."+algorithm,mpackage)
     return algo 
 
-def bind(operation, parameters):
-  if parameters:
-    if isinstance(parameters, dict):
-        query = operation % {k: monetize.convert(v) for (k, v) in parameters.items()}
-    elif type(parameters) == list or type(parameters) == tuple:
-        query = operation % tuple([monetize.convert(item) for item in parameters])
-    elif isinstance(parameters, str):
-        query = operation % monetize.convert(parameters)
-    else:
-        msg = "Parameters should be None, dict or list, now it is %s"
-  else:
-        query = operation
-  return query
-
-
 @asyncio.coroutine
 async def local_run_inparallel(local,query):
-    #await asyncio.sleep(0)
     await local.cmd(query)
     
-
-
 async def createlocalviews(local_nodes, viewlocaltable, params):
       params = json.loads(params)
-      
       ####### do it  in parallel, check if dataset and params exists #########
       for i,local in enumerate(local_nodes):
-           result = parse_mapi_result.parse(await local[0].cmd(bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
+           result = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
            if result == []:
                raise Exception('Dataset does not exist in all local nodes')
       #############################################################
       
            for attribute in params['attributes']:
-               attr = parse_mapi_result.parse(await local[0].cmd(bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
+               attr = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
                if attr == []:
                    raise Exception('Attribute '+attribute+' does not exist in all local nodes')
            for attribute in params['filters']:
-               attr = parse_mapi_result.parse(await local[0].cmd(bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
+               attr = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
                if attr == []:
                    raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
       #############################################################
@@ -65,33 +45,23 @@ async def createlocalviews(local_nodes, viewlocaltable, params):
           if i < len(params["filters"])-1:
               filterpart += ' and '
       for i,local in enumerate(local_nodes):
-           local[2].cmd(bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
+           local[2].cmd(local[0].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
 
 
-@asyncio.coroutine
 async def run_local_init(local_nodes,localtable, algorithm, viewlocaltable, localschema):
       for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-           
       await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local_init(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
       
-
-
-@asyncio.coroutine
 async def run_local(local_nodes,localtable, algorithm, viewlocaltable, localschema):
        for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
        await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
 
-      
-              
-              
 async def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, viewlocaltable, localschema):
       for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
       await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local_iter(localtable+"_"+str(i),globalresulttable)) for i,local in enumerate(local_nodes)] )
-
-
       
 async def run_global_final(global_node, globaltable, algorithm):
       result = await global_node[0].cmd("s"+getpackage(algorithm)._global(globaltable))
@@ -101,9 +71,6 @@ async def run_global_iter(global_node, local_nodes, globaltable, localtable, glo
       global_node[2].cmd("sdrop table if exists %s;" %globalresulttable)
       global_node[2].cmd("screate table %s (%s);" %(globalresulttable,globalschema))
       await global_node[0].cmd("s"+getpackage(algorithm)._global_iter(globaltable, globalresulttable))
-
-      
-      #print(global_node[0].cmd("sselect * from %s;" %globalresulttable))
       await partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable)
 
 async def partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable):
@@ -113,7 +80,6 @@ async def partialclean_up(global_node, local_nodes, globaltable, localtable, vie
           local[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
           global_node[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
 
-    
 async def clean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable, globalrestable):
       await asyncio.sleep(0)
       global_node[2].cmd("sdrop table if exists %s;" %globaltable)

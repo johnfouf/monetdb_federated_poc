@@ -11,7 +11,7 @@ import socket
 import asyncio
 import logging
 import struct
-
+from pymonetdb.sql import monetize, pythonize
 import hashlib
 import os
 from six import BytesIO, PY3
@@ -196,6 +196,22 @@ class Connection():
         else:
             raise ProgrammingError("unknown state: %s" % prompt)
 
+
+    def bind(self, operation, parameters):
+      if parameters:
+          if isinstance(parameters, dict):
+              query = operation % {k: monetize.convert(v) for (k, v) in parameters.items()}
+          elif type(parameters) == list or type(parameters) == tuple:
+              query = operation % tuple([monetize.convert(item) for item in parameters])
+          elif isinstance(parameters, str):
+              query = operation % monetize.convert(parameters)
+          else:
+              msg = "Parameters should be None, dict or list, now it is %s"
+      else:
+         query = operation
+      return query
+  
+  
     async def disconnect(self):
         """ disconnect from the monetdb server """
         logger.info("disconnecting from database")
