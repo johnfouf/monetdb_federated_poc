@@ -1,3 +1,6 @@
+import math
+import numpy
+
 def local(val1, val2):
     result = {}
     X = val1
@@ -11,8 +14,6 @@ def local(val1, val2):
     return result
     
 def merge(sx,sxx,sxy,sy,syy,n):
-    import math
-    import numpy
     n = numpy.sum(n)
     sx = numpy.sum(sx)
     sxx = numpy.sum(sxx)
