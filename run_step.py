@@ -1,16 +1,10 @@
 from threading import Thread
 import algorithms
-import importlib
 import pymonetdb
 import json
 import asyncio
 import parse_mapi_result
 
-def getpackage(algorithm):
-    mpackage = "algorithms"
-    importlib.import_module(mpackage)
-    algo = importlib.import_module("."+algorithm,mpackage)
-    return algo 
 
 @asyncio.coroutine
 async def local_run_inparallel(local,query):
@@ -51,26 +45,26 @@ async def createlocalviews(local_nodes, viewlocaltable, params):
 async def run_local_init(local_nodes,localtable, algorithm, viewlocaltable, localschema):
       for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local_init(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
+      await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local_init(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
       
 async def run_local(local_nodes,localtable, algorithm, viewlocaltable, localschema):
        for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-       await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
+       await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
 
 async def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, viewlocaltable, localschema):
       for i,local in enumerate(local_nodes):
            local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local[0],"s"+getpackage(algorithm)._local_iter(localtable+"_"+str(i),globalresulttable)) for i,local in enumerate(local_nodes)] )
+      await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local_iter(localtable+"_"+str(i),globalresulttable)) for i,local in enumerate(local_nodes)] )
       
 async def run_global_final(global_node, globaltable, algorithm):
-      result = await global_node[0].cmd("s"+getpackage(algorithm)._global(globaltable))
+      result = await global_node[0].cmd("s"+algorithm._global(globaltable))
       return parse_mapi_result.parse(result)
       
 async def run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema):
       global_node[2].cmd("sdrop table if exists %s;" %globalresulttable)
       global_node[2].cmd("screate table %s (%s);" %(globalresulttable,globalschema))
-      await global_node[0].cmd("s"+getpackage(algorithm)._global_iter(globaltable, globalresulttable))
+      await global_node[0].cmd("s"+algorithm._global_iter(globaltable, globalresulttable))
       await partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable)
 
 async def partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable):

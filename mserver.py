@@ -63,8 +63,11 @@ class MainHandler(BaseHandler):
   
 
   async def post(self):
+   ## get params, algorithm contains the name of the algorithm, params is a valid json file
     algorithm = self.get_argument("algorithm")
     params = self.get_argument("params")
+    
+    #### new connection per request - required since connection objects are not thread safe at the time
     global_node, local_nodes = await settings.initialize(sys.argv)
     try:
       result = await run_algorithm.run(algorithm,params, global_node, local_nodes)
