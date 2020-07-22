@@ -5,7 +5,7 @@ Run server: <br>
 
 `python3 mserver.py monetdb://127.0.0.1:50000/voc monetdb://127.0.0.1:50000/voc2 monetdb://127.0.0.1:50000/voc3`
 
-URL Request Post:
+URL Request Post: <br>
 Two fields: <br>
 <br> 1) `algorithm` (e.g., "pearson")
 <br> 2) `params`: valid json including table name, attributes and filters. e.g. 
