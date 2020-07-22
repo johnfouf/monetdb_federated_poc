@@ -1,5 +1,5 @@
 import pymonetdb
-import mapi_async as mapi
+from . import mapi_async as mapi
 from collections import namedtuple
 from pymonetdb.sql import monetize, pythonize
 

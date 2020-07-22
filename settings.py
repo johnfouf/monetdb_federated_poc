@@ -1,4 +1,4 @@
-import mapi_async
+from monetdblib import mapi_async
 from pymonetdb import mapi
 import asyncio
 from urllib.parse import urlparse
