@@ -10,21 +10,21 @@ import parse_mapi_result
 async def local_run_inparallel(local,query):
     await local.cmd(query)
     
-async def createlocalviews(local_nodes, viewlocaltable, params):
+async def createlocalviews(db_objects, viewlocaltable, params):
       params = json.loads(params)
       ####### do it  in parallel, check if dataset and params exists #########
-      for i,local in enumerate(local_nodes):
-           result = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
+      for i,local in enumerate(db_objects['local']):
+           result = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
            if result == []:
                raise Exception('Dataset does not exist in all local nodes')
       #############################################################
       
            for attribute in params['attributes']:
-               attr = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
+               attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
                if attr == []:
                    raise Exception('Attribute '+attribute+' does not exist in all local nodes')
            for attribute in params['filters']:
-               attr = parse_mapi_result.parse(await local[0].cmd(local[0].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
+               attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
                if attr == []:
                    raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
       #############################################################
@@ -38,48 +38,48 @@ async def createlocalviews(local_nodes, viewlocaltable, params):
           vals.append(filt[2]) 
           if i < len(params["filters"])-1:
               filterpart += ' and '
-      for i,local in enumerate(local_nodes):
-           local[2].cmd(local[0].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
+      for i,local in enumerate(db_objects['local']):
+           local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
 
 
-async def run_local_init(local_nodes,localtable, algorithm, viewlocaltable, localschema):
-      for i,local in enumerate(local_nodes):
-           local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local_init(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
+async def run_local_init(db_objects,localtable, algorithm, viewlocaltable, localschema):
+      for i,local in enumerate(db_objects['local']):
+           local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
+      await asyncio.gather(*[local_run_inparallel(local['async_con'],"s"+algorithm._local_init(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(db_objects['local'])] )
       
-async def run_local(local_nodes,localtable, algorithm, viewlocaltable, localschema):
-       for i,local in enumerate(local_nodes):
-           local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-       await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(local_nodes)] )
+async def run_local(db_objects,localtable, algorithm, viewlocaltable, localschema):
+       for i,local in enumerate(db_objects['local']):
+           local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
+       await asyncio.gather(*[local_run_inparallel(local['async_con'],"s"+algorithm._local(localtable+"_"+str(i),viewlocaltable)) for i,local in enumerate(db_objects['local'])] )
 
-async def run_local_iter(local_nodes,localtable,globalresulttable, algorithm, viewlocaltable, localschema):
-      for i,local in enumerate(local_nodes):
-           local[2].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local[0],"s"+algorithm._local_iter(localtable+"_"+str(i),globalresulttable)) for i,local in enumerate(local_nodes)] )
+async def run_local_iter(db_objects,localtable,globalresulttable, algorithm, viewlocaltable, localschema):
+      for i,local in enumerate(db_objects['local']):
+           local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
+      await asyncio.gather(*[local_run_inparallel(local['async_con'],"s"+algorithm._local_iter(localtable+"_"+str(i),globalresulttable)) for i,local in enumerate(db_objects['local'])] )
       
-async def run_global_final(global_node, globaltable, algorithm):
-      result = await global_node[0].cmd("s"+algorithm._global(globaltable))
+async def run_global_final(db_objects, globaltable, algorithm):
+      result = await db_objects['global']['async_con'].cmd("s"+algorithm._global(globaltable))
       return parse_mapi_result.parse(result)
       
-async def run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema):
-      global_node[2].cmd("sdrop table if exists %s;" %globalresulttable)
-      global_node[2].cmd("screate table %s (%s);" %(globalresulttable,globalschema))
-      await global_node[0].cmd("s"+algorithm._global_iter(globaltable, globalresulttable))
-      await partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable)
+async def run_global_iter(db_objects, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema):
+      db_objects['global']['con'].cmd("sdrop table if exists %s;" %globalresulttable)
+      db_objects['global']['con'].cmd("screate table %s (%s);" %(globalresulttable,globalschema))
+      await db_objects['global']['async_con'].cmd("s"+algorithm._global_iter(globaltable, globalresulttable))
+      await iteration_clean_up(db_objects, globaltable, localtable, viewlocaltable)
 
-async def partialclean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable):
+async def iteration_clean_up(db_objects, globaltable, localtable, viewlocaltable):
       await asyncio.sleep(0)
-      global_node[2].cmd("sdrop table if exists %s;" %globaltable)
-      for i,local in enumerate(local_nodes):
-          local[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
-          global_node[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
+      db_objects['global']['con'].cmd("sdrop table if exists %s;" %globaltable)
+      for i,local in enumerate(db_objects['local']):
+          local['con'].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
+          db_objects['global']['con'].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
 
-async def clean_up(global_node, local_nodes, globaltable, localtable, viewlocaltable, globalrestable):
+async def clean_up(db_objects, globaltable, localtable, viewlocaltable, globalrestable):
       await asyncio.sleep(0)
-      global_node[2].cmd("sdrop table if exists %s;" %globaltable)
-      global_node[2].cmd("sdrop table if exists %s;" %globalrestable)
-      for i,local in enumerate(local_nodes):
-          local[2].cmd("sdrop view if exists "+viewlocaltable+";")
-          local[2].cmd("sdrop table if exists "+globalrestable+";")
-          local[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
-          global_node[2].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
+      db_objects['global']['con'].cmd("sdrop table if exists %s;" %globaltable)
+      db_objects['global']['con'].cmd("sdrop table if exists %s;" %globalrestable)
+      for i,local in enumerate(db_objects['local']):
+          local['con'].cmd("sdrop view if exists "+viewlocaltable+";")
+          local['con'].cmd("sdrop table if exists "+globalrestable+";")
+          local['con'].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")
+          db_objects['global']['con'].cmd("sdrop table if exists "+localtable+"_"+str(i)+";")

@@ -17,21 +17,21 @@ def get_uniquetablename():
 
 ######### simple local global algorithm params:
 # algorithm: the algorithm name provided by the user 
-# global_node, local_nodes: the connection objects and the database names 
+# db_objects: the connection objects and the database names 
 # localtable: the name of the result table in localnodes
 # globaltable: the name of the table in global node which contains the merge of all the local result tables
 # viewlocaltable: the view which contains the data that will be processed
 # localschema: the schema of the result table in localnodes                  
 
-async def run_simple(algorithm, global_node, local_nodes, localtable, globaltable, viewlocaltable, localschema):
-    await run_step.run_local(local_nodes,localtable, algorithm, viewlocaltable, localschema)
-    await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
-    return await run_step.run_global_final(global_node, globaltable, algorithm)
+async def run_simple(algorithm, db_objects, localtable, globaltable, viewlocaltable, localschema):
+    await run_step.run_local(db_objects,localtable, algorithm, viewlocaltable, localschema)
+    await transfer_data.merge(db_objects, localtable, globaltable, localschema)
+    return await run_step.run_global_final(db_objects, globaltable, algorithm)
       
 
 ######### iterative algorithm params:
 # algorithm: the algorithm name provided by the user 
-# global_node, local_nodes: the connection objects and the database names 
+# db_objects: the connection objects and the database names 
 # localtable: the name of the result table in localnodes
 # globaltable: the name of the table in global node which contains the merge of all the local result tables
 # viewlocaltable: the view which contains the data that will be processed
@@ -39,26 +39,26 @@ async def run_simple(algorithm, global_node, local_nodes, localtable, globaltabl
 # localschema: the schema of the result table in localnodes 
 # globalschema: the schema of the result table in global node
           
-async def run_iterative(algorithm, global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable, localschema, globalschema):
-    await run_step.run_local_init(local_nodes,localtable, algorithm, viewlocaltable, localschema)
+async def run_iterative(algorithm, db_objects, localtable, globaltable, globalresulttable, viewlocaltable, localschema, globalschema):
+    await run_step.run_local_init(db_objects,localtable, algorithm, viewlocaltable, localschema)
     for i in range(20):
-        await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
-        await run_step.run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema)
-        await transfer_data.broadcast(global_node, local_nodes, globalresulttable, globalschema)
-        await run_step.run_local_iter(local_nodes,localtable, globalresulttable, algorithm, viewlocaltable, localschema)
-    await transfer_data.merge(global_node, local_nodes, localtable, globaltable, localschema)
-    return await run_step.run_global_final(global_node, globaltable, algorithm)
+        await transfer_data.merge(db_objects, localtable, globaltable, localschema)
+        await run_step.run_global_iter(db_objects, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema)
+        await transfer_data.broadcast(db_objects, globalresulttable, globalschema)
+        await run_step.run_local_iter(db_objects, localtable, globalresulttable, algorithm, viewlocaltable, localschema)
+    await transfer_data.merge(db_objects, localtable, globaltable, localschema)
+    return await run_step.run_global_final(db_objects, globaltable, algorithm)
 
 
 #### run function:
 # get the algorithm name and accesses the corresponding python module
 # parses and processes the params which contain: the table name, the attributes and the filters
-# gets also global_node, local_nodes: the connection objects to all the nodes of the federation
+# gets also db_objects: the connection objects to all the nodes of the federation
 # it decides the type of the algorithm using schema.json file, calls the appropriate execution function
 # cleans up the servers and returns the results
 
      
-async def run(algorithm, params, global_node, local_nodes):
+async def run(algorithm, params, db_objects):
       #### create unique table names
       table_id = get_uniquetablename()
       localtable = "local"+table_id
@@ -71,7 +71,7 @@ async def run(algorithm, params, global_node, local_nodes):
       module = get_package(algorithm)
       # create database views on local databases - each view processes the filters and the selected attributes on the requested table
       # the algorithm won't run directly on the local dataset but on the view
-      await run_step.createlocalviews(local_nodes, viewlocaltable,params)
+      await run_step.createlocalviews(db_objects, viewlocaltable,params)
       
       ##### schema.json contains info about each algorithm: the name, the type (simple, iterative etc.) and the intermediate result schema
       with open('schema.json') as json_file:
@@ -82,12 +82,12 @@ async def run(algorithm, params, global_node, local_nodes):
           if algorithm == algo:
             try:
                  if data['algorithms'][c]['type'] == 'simple':
-                     result  = await run_simple(module, global_node, local_nodes, localtable, globaltable, viewlocaltable, data['algorithms'][c]['local_schema'])
+                     result  = await run_simple(module, db_objects, localtable, globaltable, viewlocaltable, data['algorithms'][c]['local_schema'])
                  elif  data['algorithms'][c]['type'] == 'multiple':
-                     result =  await run_iterative(module,global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable, data['algorithms'][c]['local_schema'], data['algorithms'][c]['global_schema'])
+                     result =  await run_iterative(module, db_objects, localtable, globaltable, globalresulttable, viewlocaltable, data['algorithms'][c]['local_schema'], data['algorithms'][c]['global_schema'])
             except:
-                 await run_step.clean_up(global_node,local_nodes, globaltable,localtable, viewlocaltable, globalresulttable)
+                 await run_step.clean_up(db_objects, globaltable,localtable, viewlocaltable, globalresulttable)
                  raise
       ### clean up tables that are created during the execution
-      await run_step.clean_up(global_node,local_nodes, globaltable,localtable, viewlocaltable, globalresulttable)
+      await run_step.clean_up(db_objects, globaltable,localtable, viewlocaltable, globalresulttable)
       return result

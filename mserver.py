@@ -68,9 +68,9 @@ class MainHandler(BaseHandler):
     params = self.get_argument("params")
     
     #### new connection per request - required since connection objects are not thread safe at the time
-    global_node, local_nodes = await settings.initialize(sys.argv)
+    db_objects = await settings.initialize(sys.argv)
     try:
-      result = await run_algorithm.run(algorithm,params, global_node, local_nodes)
+      result = await run_algorithm.run(algorithm,params,db_objects)
       self.write("{}".format(result))
     except AlgorithmException as e:
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
@@ -83,7 +83,7 @@ class MainHandler(BaseHandler):
       self.finish()
       return
     
-    await settings.disconnect(global_node, local_nodes)
+    await settings.disconnect(db_objects)
     self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
     #self.write("{}".format(result))
     
