@@ -9,9 +9,10 @@
 
 
 <b>Usage:</b> 
-Run server: <br>
+Run server (the first argument is the global node): <br>
 
-`python3 mserver.py monetdb://127.0.0.1:50000/voc monetdb://127.0.0.1:50000/voc2 monetdb://127.0.0.1:50000/voc3`
+`python3 mserver.py monetdb://hostname:port/dbname monetdb://hostname:port/dbname monetdb://hostname:port/dbname
+
 
 <b>URL Request Post:</b> <br>
 Two fields: <br>
