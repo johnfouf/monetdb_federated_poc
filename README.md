@@ -3,7 +3,8 @@
 <b>Installation</b>
 1) Install monetdb from source (https://www.monetdb.org/Developers/SourceCompile) to all the nodes of the federation
 2) Create databases in each node. The tables that will take place in the federation should have the same schema in all local nodes
-3) Run udf.sql file in mclient in all the monetdb databases.
+3) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
+4) Run udfs.sql file in mclient in all the monetdb databases.
 
 
 
