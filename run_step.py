@@ -39,7 +39,11 @@ async def createlocalviews(db_objects, viewlocaltable, params):
           if i < len(params["filters"])-1:
               filterpart += ' and '
       for i,local in enumerate(db_objects['local']):
-           local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
+           if filterpart == " ":
+               local['con'].cmd("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+";")
+
+           else:
+               local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
 
 
 async def run_local_init(db_objects,localtable, algorithm, viewlocaltable, localschema):
