@@ -1,3 +1,7 @@
+Dependency: `moz_sql_parser`, `pip3 install moz_sql_parser`
+https://github.com/mozilla/moz-sql-parser
+
+
 Execution: `python3 mfederate.py http://host:port`
 host:port is where mserver is running.
 <br>example query:<br>
