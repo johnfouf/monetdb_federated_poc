@@ -4,4 +4,4 @@ host:port is where mserver is running.
 `select pearson(c1,c2) from data where c1>1;`
 <br>
 
-Table data and attributes c1,c2 should exist in all the local nodes
+Table `data` and attributes `c1,c2` should exist in all the local nodes
