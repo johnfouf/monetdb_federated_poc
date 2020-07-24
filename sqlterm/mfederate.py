@@ -638,10 +638,3 @@ while True:
             except:
                 #print "Not proper clean-up"
                 pass
-
-
-
-
-
-- deployment
-- longitudinal
