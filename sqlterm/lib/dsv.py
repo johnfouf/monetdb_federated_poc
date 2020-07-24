@@ -199,9 +199,8 @@ class UnicodeWriter:
         self.writer.writerow([anytouni(s).encode("utf_8") for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
-        data = data.decode("utf_8")
         # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
+        #data = self.encoder.encode(data)
         # write to the target stream
         self.stream.write(data)
         # empty queue

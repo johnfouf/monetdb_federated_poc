@@ -23,7 +23,8 @@ async def createlocalviews(db_objects, viewlocaltable, params):
                attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
                if attr == []:
                    raise Exception('Attribute '+attribute+' does not exist in all local nodes')
-           for attribute in params['filters']:
+           for formula in params['filters']:
+             for attribute in formula:
                attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
                if attr == []:
                    raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
@@ -31,13 +32,19 @@ async def createlocalviews(db_objects, viewlocaltable, params):
       
       filterpart = " "
       vals = []
-      for i,filt in enumerate(params["filters"]):
+      for j,formula in enumerate(params["filters"]):
+        andpart = " "
+        for i,filt in enumerate(formula):
           if filt[1] not in [">","<","<>",">=","<=","="]:
               raise Exception('Operator '+filt[1]+' not valid')
-          filterpart += filt[0] + filt[1] + "%s"
+          andpart += filt[0] + filt[1] + "%s"
           vals.append(filt[2]) 
-          if i < len(params["filters"])-1:
-              filterpart += ' and '
+          if i < len(formula)-1:
+              andpart += ' and '
+        if andpart!=" ":
+            filterpart += "("+andpart+")"
+        if j < len(params["filters"])-1:
+              filterpart += ' or '
       for i,local in enumerate(db_objects['local']):
            if filterpart == " ":
                local['con'].cmd("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+";")

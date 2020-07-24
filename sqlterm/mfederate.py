@@ -582,18 +582,18 @@ while True:
                   for i in (filt.keys()):
                     if i not in ['and','or']:
                         filters.append([st['where'][i][0],options[i],st['where'][i][1]])
-                    else:
-                        if i == 'and':
+                    elif i == 'and':
                             for j in filt['and']:
                                 for k in j:
                                     filters.append([j[k][0],options[k],j[k][1]])
+                    
                 
                 filters = json.dumps(filters)
               except Exception as err:
                   print(err)
                   continue
               try:
-                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(params)+',"filters":'+filters+'}'],sys.argv[1])
+                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(params)+',"filters":['+filters+']}'],sys.argv[1])
               except Exception as err:
                 print(err)
                 continue
@@ -639,3 +639,9 @@ while True:
                 #print "Not proper clean-up"
                 pass
 
+
+
+
+
+- deployment
+- longitudinal
