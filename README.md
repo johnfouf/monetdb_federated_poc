@@ -28,4 +28,5 @@ The innermost tuples each describe a single column predicate. The list of inner 
 
 1) Add its UDFs to udf.sql file
 2) Add its lib to algorithms folder (optional)
-3) Update schema.json file accordingly
+3) Add an [algorithm name].py file to algorithms folder which returns the sql query for each step of the algorithm
+4) Update schema.json file accordingly
