@@ -71,16 +71,16 @@ class MainHandler(BaseHandler):
     try:
       result = await run_algorithm.run(algorithm,params,db_objects)
       self.write("{}".format(result))
-    except AlgorithmException as e:
+    except Exception as e:
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
-      await settings.disconnect(global_node, local_nodes)
+      await settings.disconnect(db_objects)
       
-      self.set_status(500)
-      self.write(str(e))
+      self.write("Error: "+str(e))
       self.finish()
-      return
+      return 
+
     
     await settings.disconnect(db_objects)
     self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
