@@ -1,6 +1,5 @@
 
 import logging
-import pymonetdb
 import sys
 import settings
 import json
@@ -13,9 +12,6 @@ from tornado.log import enable_pretty_logging
 from tornado.options import define, options
 
 
-MAX_WORKERS = 4
-    
-PROCESSES_PER_CPU = 2
 WEB_SERVER_PORT=7779
 define("port", default=WEB_SERVER_PORT, help="run on the given port", type=int)
 
