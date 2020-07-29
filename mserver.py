@@ -76,7 +76,6 @@ class MainHandler(BaseHandler):
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
       await settings.disconnect(db_objects)
-      raise
       self.write("Error: "+str(e))
       self.finish()
       return 

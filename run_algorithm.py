@@ -78,7 +78,6 @@ async def run(algorithm, params, db_objects):
          else:
              bindparams.append(db_objects['global']['async_con'].bindsingle(i))
           
-      print(params["filters"])
       ### get the corresponding algorithm python module using algorithm name
       module = get_package(algorithm)
       # create database views on local databases - each view processes the filters and the selected attributes on the requested table
