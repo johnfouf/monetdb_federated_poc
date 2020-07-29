@@ -564,11 +564,19 @@ while True:
                 mkeys = algo_params.keys()
                 for i in mkeys:
                      algorithm = i
-                params = st['select']['value'][algorithm]
-
-                if type(params) == str:
-                    params = [params]
-                  
+                all_params = st['select']['value'][algorithm]
+                attr = []
+                parameters = []
+                for par in  all_params:
+                    if isinstance(par, (int, float, complex)):
+                        parameters.append(par)
+                    elif isinstance(par, str):
+                        attr.append(par)
+                    elif isinstance(par, dict):
+                        parameters.append(par['literal'])
+                        
+                if type(all_params) == str:
+                    attr = [all_params]
                 filterexists = 0
                 filters = []  
                 table = st['from']
@@ -593,7 +601,7 @@ while True:
                   print(err)
                   continue
               try:
-                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(params)+',"filters":['+filters+']}'],sys.argv[1])
+                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(attr)+',"parameters":'+json.dumps(parameters)+',"filters":['+filters+']}'],sys.argv[1])
               except Exception as err:
                 print(err)
                 continue

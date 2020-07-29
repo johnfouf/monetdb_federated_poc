@@ -1,14 +1,11 @@
 from threading import Thread
-import time 
 
-globtime = [0]
 
 def broadcast_inparallel(local, globalresulttable, globalschema, dbname ):
         local.cmd("sDROP TABLE IF EXISTS %s;" %globalresulttable)
         local.cmd("sCREATE REMOTE TABLE %s (%s) on 'mapi:%s';" %(globalresulttable, globalschema, dbname))  
 
 def merge(db_objects, localtable, globaltable, localschema):
-    
     con = db_objects['global']['con']
     con.cmd("sDROP TABLE IF EXISTS %s;" %globaltable);
     con.cmd("sCREATE MERGE TABLE %s (%s);" %(globaltable,localschema));
@@ -21,7 +18,6 @@ def merge(db_objects, localtable, globaltable, localschema):
     
     
 def broadcast(db_objects, globalresulttable, globalschema):
-    t1 = time.time()
     threads = []
     for i,local_node in enumerate(db_objects['local']):
           t = Thread(target = broadcast_inparallel, args = (local_node['con'], globalresulttable, globalschema, db_objects['global']['dbname']))
@@ -29,8 +25,7 @@ def broadcast(db_objects, globalresulttable, globalschema):
           threads.append(t)    
     for t in threads:
           t.join()
-    globtime[0] += (time.time() - t1)
-    print(globtime)
+
     
 def transferdirect(node1, localtable, node2, transferschema):
     node2[2].cmd("sDROP TABLE IF EXISTS %s;" %localtable)
