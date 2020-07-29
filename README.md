@@ -6,7 +6,7 @@
 3) Create the databases in the tmpfs of your VMs, since remote tables at the time are created on disk, it makes a big difference in execution times.
 4) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
 5) Run udfs.sql file in mclient in all the monetdb databases.
-6) Install dependencies: `pip3 install tornado`, `pip3 install pymonetdb`, `pip3 install numpy`
+6) Install dependencies: `pip3 install tornado`, `pip3 install numpy`
 
 
 
