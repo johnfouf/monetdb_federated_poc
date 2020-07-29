@@ -79,14 +79,14 @@ class MainHandler(BaseHandler):
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
-      #await settings.disconnect(global_node, local_nodes)
+      await settings.disconnect(global_node, local_nodes)
       
       self.set_status(500)
       self.write(str(e))
       self.finish()
       return
     
-    #await settings.disconnect(db_objects)
+    await settings.disconnect(db_objects)
     self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
     #self.write("{}".format(result))
     

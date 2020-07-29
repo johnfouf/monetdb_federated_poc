@@ -69,12 +69,17 @@ async def initialize(args):
     
     
 async def disconnect(db_objects):
-    await  db_objects['global']['async_con'].disconnect()
-    db_objects['global']['con'].disconnect()
-    for local in db_objects['local']:
-        await local['async_con'].disconnect()
-        local['con'].disconnect()
-    db_objects = {}
+    await dbpool['global']._release(db_objects['global']['async_con'])
+    for i,local in enumerate(dbpool['local']):
+        await  local._release(db_objects['local'][i]['async_con'])
+
+
+#    await  db_objects['global']['async_con'].disconnect()
+#    db_objects['global']['con'].disconnect()
+#    for local in db_objects['local']:
+#        await local['async_con'].disconnect()
+#        local['con'].disconnect()
+#    db_objects = {}
     
 
 

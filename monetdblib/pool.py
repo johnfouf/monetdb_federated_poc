@@ -254,6 +254,8 @@ class Pool(asyncio.AbstractServer):
                 else:
                     return None
                     
+    async def _release(self,conn):
+        self._free.appendleft(conn)
 
     async def _fill_free_pool(self, override_min):
         # iterate over free connections and remove timeouted ones
