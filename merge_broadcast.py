@@ -11,10 +11,9 @@ def merge(db_objects, localtable, globaltable, localschema):
     con.cmd("sCREATE MERGE TABLE %s (%s);" %(globaltable,localschema));
     for i,local_node in enumerate(db_objects['local']):
         con.cmd("sDROP TABLE IF EXISTS %s_%s;" %(localtable, i))
-        print("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s';")
+        print("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s';" %(localtable, i, localschema,local_node['dbname']))
         con.cmd("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s'; " %(localtable, i, localschema,local_node['dbname']))
         con.cmd("sALTER TABLE %s ADD TABLE %s_%s;" %(globaltable,localtable,i));  
-    
     
     
 def broadcast(db_objects, globalresulttable, globalschema):
