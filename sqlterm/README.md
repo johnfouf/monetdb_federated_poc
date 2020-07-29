@@ -1,3 +1,5 @@
+A light-weight terminal that get's a subset of SQL and translates it to post request for the mserver.
+
 Dependency: `moz_sql_parser`, `pip3 install moz_sql_parser`
 https://github.com/mozilla/moz-sql-parser
 
