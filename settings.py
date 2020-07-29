@@ -1,5 +1,5 @@
 from monetdblib import mapi_async
-from pymonetdb import mapi
+from monetdblib import mapi
 import asyncio
 from urllib.parse import urlparse
 from monetdblib import pool

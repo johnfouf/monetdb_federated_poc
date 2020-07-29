@@ -1,9 +1,9 @@
 from threading import Thread
 import algorithms
-import pymonetdb
 import json
 import asyncio
 from monetdblib import parse_mapi_result
+from monetdblib import mapi
 
 
 @asyncio.coroutine
@@ -51,7 +51,6 @@ async def createlocalviews(db_objects, viewlocaltable, params):
 
            else:
                local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
-
 
 async def run_local_init(db_objects,localtable, algorithm, viewlocaltable, localschema):
       for i,local in enumerate(db_objects['local']):

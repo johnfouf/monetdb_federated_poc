@@ -1,22 +1,27 @@
 from threading import Thread
+import time 
+
+globtime = [0]
 
 def broadcast_inparallel(local, globalresulttable, globalschema, dbname ):
         local.cmd("sDROP TABLE IF EXISTS %s;" %globalresulttable)
         local.cmd("sCREATE REMOTE TABLE %s (%s) on 'mapi:%s';" %(globalresulttable, globalschema, dbname))  
 
 def merge(db_objects, localtable, globaltable, localschema):
+    
     con = db_objects['global']['con']
-    async_con = db_objects['global']['async_con']
     con.cmd("sDROP TABLE IF EXISTS %s;" %globaltable);
     con.cmd("sCREATE MERGE TABLE %s (%s);" %(globaltable,localschema));
     for i,local_node in enumerate(db_objects['local']):
         con.cmd("sDROP TABLE IF EXISTS %s_%s;" %(localtable, i))
         print("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s';")
         con.cmd("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s'; " %(localtable, i, localschema,local_node['dbname']))
-        await async_con.cmd("screate temp table %s_%s_%s as select * from %s_%s;"  %(localtable,i,i,localtable,i))
-        con.cmd("sALTER TABLE %s ADD TABLE %s_%s_%s;" %(globaltable,localtable,i,i));  
-        
+        con.cmd("sALTER TABLE %s ADD TABLE %s_%s;" %(globaltable,localtable,i));  
+    
+    
+    
 def broadcast(db_objects, globalresulttable, globalschema):
+    t1 = time.time()
     threads = []
     for i,local_node in enumerate(db_objects['local']):
           t = Thread(target = broadcast_inparallel, args = (local_node['con'], globalresulttable, globalschema, db_objects['global']['dbname']))
@@ -24,7 +29,9 @@ def broadcast(db_objects, globalresulttable, globalschema):
           threads.append(t)    
     for t in threads:
           t.join()
-
+    globtime[0] += (time.time() - t1)
+    print(globtime)
+    
 def transferdirect(node1, localtable, node2, transferschema):
     node2[2].cmd("sDROP TABLE IF EXISTS %s;" %localtable)
     node2[2].cmd("sCREATE REMOTE TABLE %s (%s) on 'mapi:%s';" %(localtable, transferschema,node1[1]))
