@@ -585,6 +585,7 @@ while True:
                 except:
                     filterexists = -1
                 
+                disjunctive = 0
                 if filterexists == 0:
                   options = {'eq' : '=', 'neq' : '<>', 'gte' : '>=', 'gt' : '>', 'lt' : '<', 'lte' : '<='}
                   for i in (filt.keys()):
@@ -594,14 +595,28 @@ while True:
                             for j in filt['and']:
                                 for k in j:
                                     filters.append([j[k][0],options[k],j[k][1]])
-                    
-                
-                filters = json.dumps(filters)
+                                    
+                    elif i == 'or':
+                            disjunctive = 1
+                            for num,j in enumerate(filt[i]):
+                                for k in j.keys():
+                                    if k not in ['and','or']:
+                                        filters.append([[filt[i][num][k][0],options[k],filt[i][num][k][1]]]) 
+                                    elif k == 'and':
+                                        filtpart = []
+                                        for ma in filt[i][num]['and']:
+                                            for kk in ma:
+                                                filtpart.append([ma[kk][0],options[kk],ma[kk][1]])
+                                        filters.append(filtpart)
+                if disjunctive:
+                    filters = json.dumps(filters)
+                else:
+                    filters = "[" + json.dumps(filters) + "]"
               except Exception as err:
                   print(err)
                   continue
               try:
-                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(attr)+',"parameters":'+json.dumps(parameters)+',"filters":['+filters+']}'],sys.argv[1])
+                res = urlrequestpost([u'algorithm', algorithm, u'params', u'{"table":"'+table+'", "attributes":'+json.dumps(attr)+',"parameters":'+json.dumps(parameters)+',"filters":'+filters+'}'],sys.argv[1])
               except Exception as err:
                 print(err)
                 continue
