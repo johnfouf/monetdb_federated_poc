@@ -211,6 +211,10 @@ class Connection():
          query = operation
       return query
   
+    def bindsingle(self,  parameter):
+        return monetize.convert(parameter)
+          
+  
   
     async def disconnect(self):
         """ disconnect from the monetdb server """

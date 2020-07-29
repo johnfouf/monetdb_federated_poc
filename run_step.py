@@ -11,7 +11,7 @@ async def local_run_inparallel(local,query):
     await local.cmd(query)
     
 async def createlocalviews(db_objects, viewlocaltable, params):
-      params = json.loads(params)
+      
       ####### do it  in parallel, check if dataset and params exists #########
       for i,local in enumerate(db_objects['local']):
            result = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
@@ -52,29 +52,29 @@ async def createlocalviews(db_objects, viewlocaltable, params):
            else:
                local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
 
-async def run_local_init(db_objects,localtable, algorithm, viewlocaltable, localschema):
+async def run_local_init(db_objects,localtable, algorithm, parameters, attr, viewlocaltable, localschema):
       for i,local in enumerate(db_objects['local']):
            local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local_init(viewlocaltable)) for i,local in enumerate(db_objects['local'])] )
+      await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local_init(viewlocaltable, parameters, attr)) for i,local in enumerate(db_objects['local'])] )
       
-async def run_local(db_objects,localtable, algorithm, viewlocaltable, localschema):
+async def run_local(db_objects,localtable, algorithm, parameters, attr, viewlocaltable, localschema):
        for i,local in enumerate(db_objects['local']):
            local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-       await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local(viewlocaltable)) for i,local in enumerate(db_objects['local'])] )
+       await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local(viewlocaltable, parameters, attr)) for i,local in enumerate(db_objects['local'])] )
 
-async def run_local_iter(db_objects,localtable,globalresulttable, algorithm, viewlocaltable, localschema):
+async def run_local_iter(db_objects,localtable,globalresulttable, algorithm, parameters, attr, viewlocaltable, localschema):
       for i,local in enumerate(db_objects['local']):
            local['con'].cmd("screate table %s (%s);" %(localtable+"_"+str(i),localschema))
-      await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local_iter(globalresulttable)) for i,local in enumerate(db_objects['local'])] )
+      await asyncio.gather(*[local_run_inparallel(local['async_con'],"sinsert into "+localtable+"_"+str(i)+" "+algorithm._local_iter(globalresulttable, parameters, attr)) for i,local in enumerate(db_objects['local'])] )
       
-async def run_global_final(db_objects, globaltable, algorithm):
-      result = await db_objects['global']['async_con'].cmd("s"+algorithm._global(globaltable))
+async def run_global_final(db_objects, globaltable, algorithm, parameters, attr):
+      result = await db_objects['global']['async_con'].cmd("s"+algorithm._global(globaltable, parameters, attr))
       return parse_mapi_result.parse(result)
       
-async def run_global_iter(db_objects, globaltable, localtable, globalresulttable, algorithm, viewlocaltable, globalschema):
+async def run_global_iter(db_objects, globaltable, localtable, globalresulttable, algorithm, parameters, attr, viewlocaltable, globalschema):
       db_objects['global']['con'].cmd("sdrop table if exists %s;" %globalresulttable)
       db_objects['global']['con'].cmd("screate table %s (%s);" %(globalresulttable,globalschema))
-      await db_objects['global']['async_con'].cmd("sinsert into " + globalresulttable + " " +algorithm._global_iter(globaltable))
+      await db_objects['global']['async_con'].cmd("sinsert into " + globalresulttable + " " +algorithm._global_iter(globaltable, parameters, attr))
       await iteration_clean_up(db_objects, globaltable, localtable, viewlocaltable)
 
 async def iteration_clean_up(db_objects, globaltable, localtable, viewlocaltable):

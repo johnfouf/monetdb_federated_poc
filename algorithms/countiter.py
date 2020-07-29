@@ -1,11 +1,11 @@
-def _local_init(viewlocaltable):
-    return "select numpy_count(c1) as c1 from %s;" %viewlocaltable
+def _local_init(viewlocaltable, parameters, attr):
+    return "select numpy_count(%s) as c1 from %s;" %(attr[0], viewlocaltable)
     
-def _global_iter(globaltable):
-    return "select numpy_sum(c1) as c1 from %s;" %globaltable
+def _global_iter(globaltable, parameters, attr):
+    return "select numpy_sum(%s) as c1 from %s;" %(attr[0],globaltable)
     
-def _local_iter(globalresulttable):
-    return "select numpy_sum(c1) as c1 from %s;" %(globalresulttable)
+def _local_iter(globalresulttable, parameters, attr):
+    return "select numpy_sum(%s) as c1 from %s;" %(attr[0], globalresulttable)
     
-def _global(globaltable):
-    return "select numpy_sum(c1) as c1 from %s;" %globaltable
+def _global(globaltable, parameters, attr):
+    return "select numpy_sum(%s) as c1 from %s;" %(attr[0],globaltable)
