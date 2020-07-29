@@ -21,4 +21,4 @@ Two fields: <br>
 <br> 1) `algorithm` (e.g., "pearson")
 <br> 2) `params`: valid json including table name, attributes and filters. e.g. Filters follow the DNF (disjunctive normal form:
 The innermost tuples each describe a single column predicate. The list of inner predicates is interpreted as a conjunction (AND), forming a more selective and multiple column predicate. Finally, the most outer list combines these filters as a disjunction (OR).
-`{"table":"data", "attributes":["c1","c2"],"filters":[[["c1",">","2"],["c1","<","10000"]],[["c1",">","0"]]]}`
+`{"table":"data", "attributes":["c1","c2"],"params":[0.7,4],"filters":[[["c1",">","2"],["c1","<","10000"]],[["c1",">","0"]]]}`
