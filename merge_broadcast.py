@@ -6,13 +6,15 @@ def broadcast_inparallel(local, globalresulttable, globalschema, dbname ):
 
 def merge(db_objects, localtable, globaltable, localschema):
     con = db_objects['global']['con']
+    async_con = db_objects['global']['async_con']
     con.cmd("sDROP TABLE IF EXISTS %s;" %globaltable);
     con.cmd("sCREATE MERGE TABLE %s (%s);" %(globaltable,localschema));
     for i,local_node in enumerate(db_objects['local']):
         con.cmd("sDROP TABLE IF EXISTS %s_%s;" %(localtable, i))
         print("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s';")
         con.cmd("sCREATE REMOTE TABLE %s_%s (%s) on 'mapi:%s'; " %(localtable, i, localschema,local_node['dbname']))
-        con.cmd("sALTER TABLE %s ADD TABLE %s_%s;" %(globaltable,localtable,i));  
+        await async_con.cmd("screate temp table %s_%s_%s as select * from %s_%s;"  %(localtable,i,i,localtable,i))
+        con.cmd("sALTER TABLE %s ADD TABLE %s_%s_%s;" %(globaltable,localtable,i,i));  
         
 def broadcast(db_objects, globalresulttable, globalschema):
     threads = []
