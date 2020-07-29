@@ -22,3 +22,10 @@ Two fields: <br>
 <br> 2) `params`: valid json including table name, attributes and filters. e.g. Filters follow the DNF (disjunctive normal form:
 The innermost tuples each describe a single column predicate. The list of inner predicates is interpreted as a conjunction (AND), forming a more selective and multiple column predicate. Finally, the most outer list combines these filters as a disjunction (OR).
 `{"table":"data", "attributes":["c1","c2"],"parameters":[0.7,4],"filters":[[["c1",">","2"],["c1","<","10000"]],[["c1",">","0"]]]}`
+
+<br>
+<b>Implement a new algorithm:</b> <br>
+
+1) Add its UDFs to udf.sql file
+2) Add its lib to algorithms folder (optional)
+3) Update schema.json file accordingly
