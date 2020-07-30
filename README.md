@@ -39,7 +39,6 @@ The innermost tuples each describe a single column predicate. The list of inner 
 
 <br>
 
-<br>
 <b>General comments:</b> <br>
 
 1) The project is implemented with a functional programming concept.
