@@ -34,6 +34,6 @@ The innermost tuples each describe a single column predicate. The list of inner 
 <br>
 <b>Todo:</b> <br>
 
-1) Evaluate fault tolerance (node failure during a request)
+1) Evaluate fault tolerance (local node failure during a request)
 2) Suppport addition or removal of local nodes without restarting
 3) Global node failure -> assign another global
