@@ -7,13 +7,13 @@
 4) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
 5) Run udfs.sql file in mclient in all the monetdb databases.
 6) Install dependencies: `pip3 install tornado`, `pip3 install numpy`
-
+7) Include in servers.py file all the global/local nodes. The first node is the global.
 
 
 <b>Usage:</b> 
-Run server (the first argument is the global node): <br>
+Run server: <br>
 
-`python3 mserver.py monetdb://hostname:port/dbname monetdb://hostname:port/dbname monetdb://hostname:port/dbname`
+`python3 mserver.py`
 
 
 <b>URL Request Post:</b> <br>
@@ -32,8 +32,13 @@ The innermost tuples each describe a single column predicate. The list of inner 
 4) Update schema.json file accordingly
 
 <br>
+<b>Other features:</b> <br>
+1) Updating servers.py file the module is auto reloaded online and does not require restarting
+2) A simple fault tolerance has been added for local nodes. Currently, when a local node fails once does not take part in the federation any more.
+
+
+<br>
 <b>Todo:</b> <br>
 
-1) Evaluate fault tolerance (local node failure during a request)
-2) Suppport addition or removal of local nodes without restarting
+1) Evaluate fault tolerance and make it more robust
 3) Global node failure -> assign another global
