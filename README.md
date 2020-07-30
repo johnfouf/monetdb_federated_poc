@@ -48,7 +48,7 @@ Threads are inappropriate because 1) we are not CPU-intensive so that we need mo
 MySQL's python async client (https://github.com/aio-libs/aiomysql)
 4) Settings.py file needs a lot of refactoring. This contains the connections to the global/local nodes, the fault tolerance, the auto-reload etc.
 5) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
-5) The library is as light as possible to support easy deployment. Only extremely necessary dependencies need to be installed. The project is written mainly using the standard library.
+5) The library is as light as possible to support easy deployment. Only extremely necessary dependencies need to be installed (tornado, monetdb, numpy). The project is written mainly using the standard library.
 
 <br>
 
