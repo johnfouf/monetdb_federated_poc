@@ -42,8 +42,13 @@ The innermost tuples each describe a single column predicate. The list of inner 
 <b>General comments:</b> <br>
 
 1) The project is implemented with a functional programming concept.
-2) Settings.py file needs a lot of refactoring. This contains the connections to the global/local nodes, the fault tolerance, the auto-reload etc.
-3) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
+2) Async non-blocking programming has been selected to support concurrency. The reason is because the python orchestrator is not CPU intensice and spents most of the time waiting the DB to response. Multiple processes could not work since not all functionalities are concurrent safe in MonetDB.
+Threads are inappropriate because 1) we are not CPU-intensive so that we need more CPUs 2) Due to Python's GIL only one thread is allowed to hold the control of the Python interpreter at a time 3) Due to limited concurrency support of some functionalities in MonetDB many locks are required if using threads.
+3) To support concurrent async programming, Monetdb's Python client has been modified using Python's asynchronous sockets and some implementations from 
+MySQL's python async client (https://github.com/aio-libs/aiomysql)
+4) Settings.py file needs a lot of refactoring. This contains the connections to the global/local nodes, the fault tolerance, the auto-reload etc.
+5) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
+5) The library is as light as possible to support easy deployment. Only extremely necessary dependencies need to be installed. The project is written mainly using the standard library.
 
 <br>
 
