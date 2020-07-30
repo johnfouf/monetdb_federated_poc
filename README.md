@@ -38,7 +38,6 @@ The innermost tuples each describe a single column predicate. The list of inner 
 2) A simple fault tolerance has been added for local nodes. Currently, when a local node fails once does not take part in the federation any more.
 
 <br>
-<br>
 <b>Todo:</b> <br>
 
 1) Evaluate fault tolerance and make it more robust
