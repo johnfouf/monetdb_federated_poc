@@ -30,3 +30,10 @@ The innermost tuples each describe a single column predicate. The list of inner 
 2) Add its lib to algorithms folder (optional)
 3) Add an [algorithm name].py file to algorithms folder which returns the sql query for each step of the algorithm
 4) Update schema.json file accordingly
+
+<br>
+<b>Todo:</b> <br>
+
+1) Evaluate fault tolerance (node failure during a request)
+2) Suppport addition or removal of local nodes without restarting
+3) Global node failure -> assign another global
