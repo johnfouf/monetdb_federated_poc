@@ -38,6 +38,16 @@ The innermost tuples each describe a single column predicate. The list of inner 
 2) A simple fault tolerance has been added for local nodes. Currently, when a local node fails once does not take part in the federation any more.
 
 <br>
+
+<br>
+<b>General comments:</b> <br>
+
+1) The project is implemented with a functional programming concept.
+2) Settings.py file needs a lot of refactoring. This contains the connections to the global/local nodes, the fault tolerance, the auto-reload etc.
+3) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
+
+<br>
+
 <b>Todo:</b> <br>
 
 1) Evaluate fault tolerance and make it more robust
