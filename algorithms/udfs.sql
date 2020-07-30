@@ -1,11 +1,11 @@
-CREATE or replace AGGREGATE numpy_sum(val INTEGER) 
-RETURNS INTEGER 
+CREATE or replace AGGREGATE numpy_sum(val BIGINT) 
+RETURNS BIGINT
 LANGUAGE PYTHON {
     return numpy.sum(val)
 };
 
-CREATE or replace AGGREGATE numpy_count(val INTEGER) 
-RETURNS INTEGER 
+CREATE or replace AGGREGATE numpy_count(val BIGINT) 
+RETURNS BIGINT
 LANGUAGE PYTHON {
     import time
     time.sleep(4)

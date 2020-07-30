@@ -190,7 +190,7 @@ class Pool(asyncio.AbstractServer):
         async with self._cond:
             while self._free:
                 conn = self._free.popleft()
-                await conn.ensure_closed()
+                await conn.disconnect()
             self._cond.notify()
 
     def close(self):

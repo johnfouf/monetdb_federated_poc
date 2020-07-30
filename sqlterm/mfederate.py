@@ -517,7 +517,6 @@ while True:
             exit(0)
 
         
-
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
             printterm("Automatic reload is now: " + str(automatic_reload))
@@ -620,9 +619,11 @@ while True:
               except Exception as err:
                 print(err)
                 continue
-
-              for row in  ast.literal_eval(res):
-                printrow(row)
+              try:
+                  for row in  ast.literal_eval(res):
+                      printrow(row)
+              except:
+                  printrow([res])
             else:
                 print((json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False)))
                 for row in cexec:

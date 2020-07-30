@@ -60,13 +60,12 @@ class MainHandler(BaseHandler):
 
   async def post(self):
    ## get params, algorithm contains the name of the algorithm, params is a valid json file
-    print ('get_request')
     algorithm = self.get_argument("algorithm")
     params = self.get_argument("params")
     
     #### new connection per request - required since connection objects are not thread safe at the time
     
-    db_objects = await settings.initialize(sys.argv)
+    db_objects = await settings.initialize()
     
     try:
       result = await run_algorithm.run(algorithm,params,db_objects)
@@ -76,8 +75,12 @@ class MainHandler(BaseHandler):
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
       await settings.disconnect(db_objects)
+      await  settings.clearall()
+      settings.dbpool = {}
+      settings.dbpool['local'] = []
       self.write("Error: "+str(e))
       self.finish()
+      await settings.initialize()
       return 
 
     

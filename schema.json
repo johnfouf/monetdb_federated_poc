@@ -9,8 +9,8 @@
         {
             "name":"countiter", 
             "type":"multiple", 
-            "local_schema": "c1 INT",
-            "global_schema": "c1 INT"
+            "local_schema": "c1 BIGINT",
+            "global_schema": "c1 BIGINT"
         }
       ]
 }      
