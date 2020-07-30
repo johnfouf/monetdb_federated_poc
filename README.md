@@ -36,7 +36,7 @@ The innermost tuples each describe a single column predicate. The list of inner 
 1) Updating servers.py file the module is auto reloaded online and does not require restarting
 2) A simple fault tolerance has been added for local nodes. Currently, when a local node fails once does not take part in the federation any more.
 
-
+<br>
 <br>
 <b>Todo:</b> <br>
 
