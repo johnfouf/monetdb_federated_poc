@@ -35,7 +35,7 @@ The innermost tuples each describe a single column predicate. The list of inner 
 <b>Other features:</b> <br>
 
 1) Updating servers.py file the module is auto reloaded online and does not require restarting
-2) A simple fault tolerance has been added for local nodes. Currently, when a local node fails once does not take part in the federation any more.
+2) A simple fault tolerance has been added for local nodes.
 
 <br>
 
@@ -46,8 +46,7 @@ The innermost tuples each describe a single column predicate. The list of inner 
 Threads are inappropriate because 1) we are not CPU-intensive so that we need more CPUs 2) Due to Python's GIL only one thread is allowed to hold the control of the Python interpreter at a time 3) Due to limited concurrency support of some functionalities in MonetDB many locks are required if using threads.
 3) To support concurrent async programming, Monetdb's Python client has been modified using Python's asynchronous sockets and some implementations from 
 MySQL's python async client (https://github.com/aio-libs/aiomysql)
-4) Settings.py file needs a lot of refactoring. This contains the connections to the global/local nodes, the fault tolerance, the auto-reload etc.
-5) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
+4) https://docs.google.com/document/d/1rgYoajy3LqJ5ogK8Dejkix-g6lqPwEZdLGOHvCidr9Q/edit in page 3 of this document the most major issues that need updates are described
 5) The library is as light as possible to support easy deployment. Only extremely necessary dependencies need to be installed (tornado, monetdb, numpy). The project is written mainly using the standard library.
 
 <br>
@@ -56,4 +55,4 @@ MySQL's python async client (https://github.com/aio-libs/aiomysql)
 
 1) Evaluate fault tolerance and make it more robust
 2) Global node failure -> assign another global
-3) Rewrite settings.py
+3) Security, monetdb passwords etc.
