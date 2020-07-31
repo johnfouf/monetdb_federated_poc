@@ -124,14 +124,14 @@ class _PoolConnectionContextManager:
             self._pool = None
             self._conn = None
 
-def create_pool(minsize=50, maxsize=100, echo=False, pool_recycle=-1,
+def create_pool(minsize=50, maxsize=64, echo=False, pool_recycle=-1,
                 loop=None, **kwargs):
     coro = _create_pool(minsize=minsize, maxsize=maxsize, echo=echo,
                         pool_recycle=pool_recycle, loop=loop, **kwargs)
     return _PoolContextManager(coro)
 
 
-async def _create_pool(minsize=50, maxsize=100, echo=False, pool_recycle=-1,
+async def _create_pool(minsize=50, maxsize=64, echo=False, pool_recycle=-1,
                        loop=None, **kwargs):
     if loop is None:
         loop = asyncio.get_event_loop()
@@ -254,8 +254,10 @@ class Pool(asyncio.AbstractServer):
                 else:
                     return None
                     
-    async def _release(self,conn):
+    def _release(self,conn):
         self._free.appendleft(conn)
+        
+    
 
     async def _fill_free_pool(self, override_min):
         # iterate over free connections and remove timeouted ones

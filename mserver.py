@@ -10,6 +10,7 @@ from threading import Thread
 from tornado import gen 
 from tornado.log import enable_pretty_logging
 from tornado.options import define, options
+import time
 
 
 WEB_SERVER_PORT=7779
@@ -56,7 +57,7 @@ class MainHandler(BaseHandler):
   access_log.addHandler(hdlr)
   app_log.addHandler(hdlr)
   gen_log.addHandler(hdlr)
-  
+  dbs = settings.Settings()
 
   async def post(self):
    ## get params, algorithm contains the name of the algorithm, params is a valid json file
@@ -65,16 +66,19 @@ class MainHandler(BaseHandler):
     
     #### new connection per request - required since connection objects are not thread safe at the time
     
-    db_objects = await settings.initialize()
     
     try:
+      await  self.dbs.initialize()
+      db_objects = await self.dbs.acquire()
+      
       result = await run_algorithm.run(algorithm,params,db_objects)
       self.write("{}".format(result))
+      
     except Exception as e:
       #raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
       self.logger.debug("(MadisServer::post) QueryExecutionException: {}".format(str(e)))
       #print "QueryExecutionException ->{}".format(str(e))
-      await settings.disconnect(db_objects)
+      await self.dbs.release(db_objects)
       await  settings.clearall()
       settings.dbpool = {}
       settings.dbpool['local'] = []
@@ -84,11 +88,12 @@ class MainHandler(BaseHandler):
       return 
 
     
-    await settings.disconnect(db_objects)
+    await self.dbs.release(db_objects)
     self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
     #self.write("{}".format(result))
-    
     self.finish()
+    
+    
 
 
 

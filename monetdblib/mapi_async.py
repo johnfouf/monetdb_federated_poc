@@ -218,10 +218,12 @@ class Connection():
   
     async def disconnect(self):
         """ disconnect from the monetdb server """
-        logger.info("disconnecting from database")
+        print(self.hostname)
         self.state = STATE_INIT
         self.writer.close()
         await self.writer.wait_closed()
+        logger.info("disconnecting from database")
+        
 
     async def cmd(self, operation):
         """ put a mapi command on the line"""
