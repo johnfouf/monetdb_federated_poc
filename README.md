@@ -56,3 +56,18 @@ MySQL's python async client (https://github.com/aio-libs/aiomysql)
 1) Evaluate fault tolerance and make it more robust
 2) Global node failure -> assign another global
 3) Security, monetdb passwords etc.
+
+<b>Research issues (probably not part of mvp):</b><br>
+Monetdb:<br>
+1) What happens if data is bigger than memory (e.g., chunking)
+2) Balance between SQL and python
+3) Avoid copies of data in python udfs
+4) Support of PyPy UDFs (in some aggregations with group by, pypy seems to be the only solution to avoid data copies and still run fast)
+5) Languge issues (e.g., dynamic schema, yesql)
+
+
+Federation:<br>
+1) Dataflow language. Define a language to produce easy dataflows.
+2) An abstraction to implement an understandable federated algorithm, both local/global calculations and dataflow in one script.
+
+
