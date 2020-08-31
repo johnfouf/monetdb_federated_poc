@@ -62,7 +62,7 @@ Monetdb:<br>
 1) What happens if data is bigger than memory (e.g., chunking)
 2) Balance between SQL and python
 3) Avoid copies of data in python udfs
-4) Support of PyPy UDFs (in some aggregations with group by, pypy seems to be the only solution to avoid data copies and still run fast)
+4) Support of PyPy UDFs (in some aggregations with group by, pypy seems to be the only solution to avoid data copies and still run fast while writing python)
 5) Languge issues (e.g., dynamic schema, yesql)
 
 
