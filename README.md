@@ -2,13 +2,30 @@
 
 <b>Installation</b>
 1) Install monetdb from source (https://www.monetdb.org/Developers/SourceCompile) to all the nodes of the federation
-2) Create databases in each node. The tables that will take place in the federation should have the same schema in all local nodes
-3) Create the databases in the tmpfs of your VMs, since remote tables at the time are created on disk, it makes a big difference in execution times.
-4) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
-5) Run udfs.sql file in mclient in all the monetdb databases.
-6) Install dependencies: `pip3 install tornado`, `pip3 install numpy`
-7) Include in servers.py file all the global/local nodes. The first node is the global.
+2) Python3 with numpy should be installed in all federation nodes. The mserver runs with Python 3.7 or newer.
+3) Install dependencies for mserver: `pip3 install tornado`
+4) Create databases in each node. The tables that will take place in the federation should have the same schema in all local nodes. 
+The nodes have to be really remote to play concurrently. (If all the dbs are in the same VM, strange bugs may occur)
+https://www.monetdb.org/Documentation/UserGuide/Tutorial
 
+<br>Example creation of a monetdb server and database: <br>
+
+<pre><code>
+monetdbd create mydbfarm
+monetdbd set port=50000 mydbfarm
+monetdbd set listenaddr=0.0.0.0  mydbfarm
+monetdbd start mydbfarm
+monetdb create voc
+monetdb set embedpy3=true voc
+monetdb release voc
+monetdb start voc
+</code></pre>
+
+5) Create the databases in the tmpfs of your VMs (usually in /dev/shm), since remote tables at the time are created on disk, it makes a big difference in execution times.
+6) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
+7) Run udfs.sql file in `mclient` in all the monetdb databases.
+8) Include in servers.py file all the global/local nodes (as in the already existing example). The first node is the global.
+9) Default port for mserver is hard-coded in mserver.py file.
 
 <b>Usage:</b> 
 Run server: <br>
