@@ -19,6 +19,8 @@ monetdb create voc
 monetdb set embedpy3=true voc
 monetdb release voc
 monetdb start voc
+#open client# mclient -u monetdb -d voc
+pass: monetdb
 </code></pre>
 
 5) Create the databases in the tmpfs of your VMs (usually in /dev/shm), since remote tables at the time are created on disk, it makes a big difference in execution times.
