@@ -37,7 +37,7 @@ Run server: <br>
 
 
 <b>URL Request Post:</b> <br>
-<br> Content-Type: application/x-www-form-urlencoded </br>
+<br> Content-Type: application/x-www-form-urlencoded (usually the default in most libraries), not working with type application/json</br>
 Two fields: <br>
 <br> 1) `algorithm` (e.g., "pearson")
 <br> 2) `params`: valid json including table name, attributes and filters. e.g. Filters follow the DNF (disjunctive normal form:
