@@ -37,6 +37,7 @@ Run server: <br>
 
 
 <b>URL Request Post:</b> <br>
+<br> Content-Type: application/x-www-form-urlencoded </br>
 Two fields: <br>
 <br> 1) `algorithm` (e.g., "pearson")
 <br> 2) `params`: valid json including table name, attributes and filters. e.g. Filters follow the DNF (disjunctive normal form:
