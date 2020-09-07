@@ -26,7 +26,7 @@ import hashlib
 import os
 from io import BytesIO
 from select import select
-from greenlet import greenlet
+
 
 from monetdb.exceptions import (OperationalError, DatabaseError, ProgrammingError,
                                 NotSupportedError, InterfaceError)
