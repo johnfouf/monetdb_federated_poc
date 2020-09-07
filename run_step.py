@@ -3,7 +3,7 @@ import algorithms
 import json
 import asyncio
 from monetdblib import parse_mapi_result
-from monetdblib import mapi
+from pymonetdb import mapi
 
 
 @asyncio.coroutine
