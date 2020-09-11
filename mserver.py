@@ -65,11 +65,10 @@ class MainHandler(BaseHandler):
     params = self.get_argument("params")
     
     #### new connection per request - required since connection objects are not thread safe at the time
-    
+    await  self.dbs.initialize()
+    db_objects = await self.dbs.acquire()
     
     try:
-      await  self.dbs.initialize()
-      db_objects = await self.dbs.acquire()
       
       result = await run_algorithm.run(algorithm,params,db_objects)
       self.write("{}".format(result))
