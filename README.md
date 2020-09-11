@@ -26,6 +26,15 @@ monetdb start voc
 pass: monetdb
 </code></pre>
 
+To stop and restart a server:
+
+<pre><code>
+monetdb stop voc
+monetdbd stop mydbfarm
+monetdbd start mydbfarm
+monetdb start voc
+</code></pre>
+
 5) Python libraries for algorithms are in `algorithms` folder. Set this to path and update udfs.sql file that appends the path hard-coded.
 6) Run udfs.sql file in `mclient` in all the monetdb databases.
 7) Include in servers.py file all the global/local nodes (as in the already existing example). The first node is the global.
