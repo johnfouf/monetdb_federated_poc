@@ -10,26 +10,35 @@ from pymonetdb import mapi
 async def local_run_inparallel(local,query):
     await local.cmd(query)
     
-async def createlocalviews(db_objects, viewlocaltable, params):
-      
-      ####### do it  in parallel, check if dataset and params exists #########
-      for i,local in enumerate(db_objects['local']):
-           result = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))));
-           if result == []:
-               raise Exception('Dataset does not exist in all local nodes')
-      #############################################################
-      
-           for attribute in params['attributes']:
+async def check_for_params(local,params):
+
+    result = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect id from tables where tables.system = false and tables.name = %s;",(params['table'],))))
+    if result == []:
+        raise Exception('Dataset does not exist in all local nodes')
+    checked = []
+    for attribute in params['attributes']:
+               checked.append(attribute)
                attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute,))));
                if attr == []:
                    raise Exception('Attribute '+attribute+' does not exist in all local nodes')
-           for formula in params['filters']:
+           
+    for formula in params['filters']:
              for attribute in formula:
-               attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
-               if attr == []:
-                   raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
-      #############################################################
+               if attribute not in checked:
+                   checked.append(attribute)
+                   attr = parse_mapi_result.parse(await local['async_con'].cmd(local['async_con'].bind("sselect name from columns where table_id = '"+str(result[0][0])+"' and name = %s;",(attribute[0],))));
+                   if attr == []:
+                       raise Exception('Attribute '+attribute[0]+' does not exist in all local nodes')
+
+
+def create_view_parallel(local,query):
+    local.cmd(query)
+   
+async def createlocalviews(db_objects, viewlocaltable, params):
       
+      await asyncio.gather(*[check_for_params(local,params) for i,local in enumerate(db_objects['local'])] )
+
+
       filterpart = " "
       vals = []
       for j,formula in enumerate(params["filters"]):
@@ -45,12 +54,22 @@ async def createlocalviews(db_objects, viewlocaltable, params):
             filterpart += "("+andpart+")"
         if j < len(params["filters"])-1:
               filterpart += ' or '
+              
+      threads = []
       for i,local in enumerate(db_objects['local']):
-           if filterpart == " ":
-               local['con'].cmd("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+";")
+        if filterpart == " ":
+          t = Thread(target = create_view_parallel, args = (local['con'],"sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+";"))
+          t.start()
+          threads.append(t)  
+        else:
+          t = Thread(target = create_view_parallel, args = (local['con'], local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals)))
+          t.start()
+          threads.append(t)  
+      for t in threads:
+          t.join()
 
-           else:
-               local['con'].cmd(local['async_con'].bind("sCREATE VIEW "+viewlocaltable+" AS select "+','.join(params['attributes'])+" from "+params['table']+" where"+ filterpart +";", vals))
+
+      
 
 async def run_local_init(db_objects,localtable, algorithm, parameters, attr, viewlocaltable, localschema):
       for i,local in enumerate(db_objects['local']):
