@@ -1,64 +1,43 @@
 import datetime
 import random
-import run_step
-import transfer_data
+import task_executor
+import transfer
+import json
+import importlib
+import parser
+import symbol, token
+import inspect
+import re
+import settings
+import scheduler
 
-def get_uniquetablename():
-      return 'user{0}'.format(datetime.datetime.now().microsecond + (random.randrange(1, 100+1) * 100000))
+DEBUG = settings.DEBUG
 
-def run_simple(algorithm,  global_node, local_nodes, localtable, globaltable, viewlocaltable):
-      try:
-          run_step.run_local(local_nodes,localtable, algorithm, viewlocaltable)
-          transfer_data.merge(global_node, local_nodes, localtable, globaltable)
-          result = run_step.run_global_final(global_node, globaltable, algorithm)
-      except:
-          run_step.clean_up(global_node,local_nodes, globaltable,localtable)
-          raise
-      run_step.clean_up(global_node,local_nodes, globaltable,localtable)
-      return result
-      
-def run_iterative(algorithm, global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable):
-      j = 0
-      try:
-          run_step.run_local_init(local_nodes,localtable, algorithm, viewlocaltable)
-          j+=1
-          for i in range(20):
-              transfer_data.merge(global_node, local_nodes, localtable, globaltable)
+def get_package(algorithm):
+    try:
+        mpackage = "algorithms"
+        importlib.import_module(mpackage)
+        algo = importlib.import_module("." + algorithm, mpackage)
+        if DEBUG:
+            importlib.reload(algo)
+    except ModuleNotFoundError:
+        raise Exception(f"`{algorithm}` does not exist in the algorithms library")
+    return algo
 
-              run_step.run_global_iter(global_node, local_nodes, globaltable, localtable, globalresulttable, algorithm, viewlocaltable)
-              j+=1
+def get_uniquetableid():
+    return "user{0}".format(
+        datetime.datetime.now().microsecond + (random.randrange(1, 100 + 1) * 100000)
+    )
 
-              transfer_data.broadcast(global_node, local_nodes, globalresulttable)
-
-              run_step.run_local_iter(local_nodes,localtable, globalresulttable, algorithm, viewlocaltable)
-              j+=1
-
-          transfer_data.merge(global_node, local_nodes, localtable, globaltable)
-          result = run_step.run_global_final(global_node, globaltable, algorithm)
-          j+=1
-          print(j)
-      except:
-          run_step.clean_up(global_node,local_nodes, globaltable,localtable, viewlocaltable,globalresulttable )
-          raise
-      
-      
-      run_step.clean_up(global_node,local_nodes, globaltable,localtable, viewlocaltable, globalresulttable)
-      
-      return result
-
-
-def run(algorithm, params, global_node, local_nodes):
-      
-      table_id = get_uniquetablename()
-      localtable = "local"+table_id
-      globaltable = "global"+table_id
-      viewlocaltable = 'localview'+table_id
-      globalresulttable = "globalres"+table_id
-      ## create viewlocaltable with params
-      run_step.createlocalviews(local_nodes, viewlocaltable,params)
-      ### check algorithm category
-
-      #return run_simple(algorithm, params, global_node, local_nodes, localtable, globaltable, viewlocaltable)
-      return run_iterative(algorithm,global_node, local_nodes, localtable, globaltable, globalresulttable, viewlocaltable)
-      
-      
+async def run(algorithm, params, db_objects):
+    result = []
+    params = json.loads(params)
+    ### get the corresponding algorithm python module using algorithm name
+    module = get_package(algorithm)
+    algorithm_instance = module.Algorithm()
+    table_id = get_uniquetableid()
+    transfer_runner = transfer.Transfer(db_objects, table_id)
+    task_executor_instance = task_executor.Task(db_objects, table_id, params, transfer_runner)
+    scheduler_instance  = scheduler.Scheduler(task_executor_instance, algorithm_instance.algorithm)
+    result = await scheduler_instance.schedule()
+    return result
