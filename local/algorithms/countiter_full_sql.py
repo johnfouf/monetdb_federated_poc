@@ -1,8 +1,6 @@
 class Algorithm:
 
     def algorithm(self, data_table, merged_local_results, parameters, attributes, result_table):
-        yield {"set_schema": {"local": "c1 BIGINT",
-                              "global": "termination BOOL, c1 BIGINT"}}
         for iternum in range(60):
             yield self._local(iternum, data_table, parameters, attributes, result_table)
             yield self._global(iternum, merged_local_results, parameters, attributes)

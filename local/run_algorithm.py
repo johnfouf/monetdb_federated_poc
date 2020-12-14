@@ -21,7 +21,7 @@ def get_package(algorithm):
     return algo
 
 
-async def run(algorithm, params, hash_value, step, schema, db_objects):
+async def run(algorithm, params, hash_value, step, schema,node_id, db_objects):
     result = []
     params = json.loads(params)
     ### get the corresponding algorithm python module using algorithm name
@@ -29,7 +29,7 @@ async def run(algorithm, params, hash_value, step, schema, db_objects):
     algorithm_instance = module.Algorithm()
     table_id = hash_value
     transfer_runner = transfer.Transfer(db_objects, table_id)
-    task_executor_instance = task_executor.Task(db_objects, table_id, params, transfer_runner)
+    task_executor_instance = task_executor.Task(db_objects, table_id, params, node_id, transfer_runner)
     scheduler_instance  = scheduler.Scheduler(task_executor_instance, algorithm_instance.algorithm, step , schema)
     result = await scheduler_instance.schedule()
     return result

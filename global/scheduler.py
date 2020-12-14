@@ -82,7 +82,7 @@ class Scheduler:
             return result
 
         except:
-            await self.task_executor.clean_up()
+            #await self.task_executor.clean_up()
             raise
 
 

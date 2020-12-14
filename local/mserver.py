@@ -46,12 +46,13 @@ class MainHandler(BaseHandler):
         step = self.get_argument("step")
         params = self.get_argument("params")
         static_schema = self.get_argument("schema")
+        node_id = self.get_argument("node_id")
         #### new connection per request - required since connection objects are not thread safe at the time
         await self.dbs.initialize()
         db_objects = await self.dbs.acquire()
 
         try:
-            result = await run_algorithm.run(algorithm, params, hash_value, step, static_schema, db_objects)
+            result = await run_algorithm.run(algorithm, params, hash_value, step, static_schema, node_id, db_objects)
             self.write("{}".format(result))
         except Exception as e:
             # raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")

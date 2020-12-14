@@ -3,8 +3,7 @@ class Algorithm:
 
     def algorithm(self, data_table, merged_local_results, parameters, attributes, result_table):
         iternum = 0
-        yield {"set_schema": {"local": "sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT",
-                              "global": "result FLOAT"}}
+
         yield self._local(iternum, data_table, parameters, attributes, result_table)
         yield self._global(iternum, merged_local_results, parameters, attributes)
 

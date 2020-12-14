@@ -48,13 +48,14 @@ class Scheduler:
                             raise Exception('''online UDF definition is not implemented yet''')
                     elif 'run_local' in task:
                         await self.run_local(task['run_local'])
+                    elif 'run_global' in task:
+                        await self.run_global(task['run_global'])
 
                 i+=1
 
         return 1
 
     async def set_schema(self, schema):
-        self.static_schema = True
         self.schema = schema
         if 'termination' in schema['global']:
             self.termination_in_dbms = True
@@ -66,23 +67,15 @@ class Scheduler:
     async def run_local(self, step_local):
         if not self.static_schema and 'schema' not in step_local:
             raise Exception('''Schema definition is missing''')
-        #if self.static_schema:
-        #    self.local_schema = self.schema['local']
-        #else:
-        #    self.local_schema = step_local['schema']
-        await self.task_executor.task_local(self.local_schema, step_local['sqlscript'])
+        if not self.static_schema:
+            self.local_schema = step_local['schema']
+        await self.task_executor.task_local(self.local_schema, self.static_schema, step_local['sqlscript'])
 
     async def run_global(self, step_global):
         if not self.static_schema and 'schema' not in step_global:
             raise Exception('''Schema definition is missing''')
-        if self.static_schema:
-            self.global_schema = self.schema['global']
-        else:
-            self.global_schema = step_global['schema']
-            if 'termination' in self.global_schema:
-                self.termination_in_dbms = True
 
-        result = await self.task_executor.task_global(self.global_schema, step_global['sqlscript'])
+        result = await self.task_executor.init_global_remote_table(step_global['schema'])
         return result
 
     def termination(self, global_result):

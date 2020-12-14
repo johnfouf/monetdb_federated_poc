@@ -79,7 +79,7 @@ class Connections:
                     try:
                         await con["local"]["async_con"].cursor().execute(udf)
                     except:
-                        pass
+                        raise
                     # at this time due to minimal error handling and due to testing there may be tables in the DB which
                     #  are not dropped and are dependent on some UDFs, so their recreation may fail
                     # (You cannot replace a UDF which is in use)

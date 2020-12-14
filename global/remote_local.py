@@ -5,10 +5,10 @@ class Worker:
     def __init__(self, ip):
         self.ip = ip
 
-    async def submit(self, algorithm_name, step, table_id, params, schema):
+    async def submit(self, algorithm_name, step, table_id, params, schema, node_id):
         http_client = httpclient.AsyncHTTPClient()
         try:
-            body = f'algorithm={algorithm_name}&hash={table_id}&step={step}&schema={schema}&params={json.dumps(params)}'
+            body = f'algorithm={algorithm_name}&hash={table_id}&step={step}&node_id={node_id}&schema={schema}&params={json.dumps(params)}'
             response = await http_client.fetch(self.ip, method="POST", body=body)
         except Exception as e:
             print("Error: %s" % e)

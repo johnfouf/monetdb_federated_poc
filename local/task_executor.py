@@ -6,7 +6,7 @@ import time
 current_time = lambda: int(round(time.time() * 1000))
 
 class Task:
-    def __init__(self, db_objects, table_id, params, transfer_runner):
+    def __init__(self, db_objects, table_id, params, node_id, transfer_runner):
         self.localtable = "local" + table_id
         self.globaltable = "global" + table_id
         self.viewlocaltable = "localview" + table_id
@@ -18,20 +18,21 @@ class Task:
         self.transfer_runner = transfer_runner
         self.local_schema = None
         self.global_schema = None
+        self.node_id = node_id
         self.iternum = 0
 
-    async def _local_execute(self, local,  kid, sqlscript, insert):
+    async def _local_execute(self, local, sqlscript, insert):
         if not insert:
             query = (
                 "delete from "
                 + self.localtable
                 + "_"
-                + str(kid)
+                + str(self.node_id)
                 + "; insert into "
                 + self.localtable
                 + "_"
-                + str(kid)
-                + " select "+str(kid)+" as node_id, * from ("
+                + str(self.node_id)
+                + " select "+ str(self.node_id) +" as node_id, * from ("
                 + sqlscript
                 + ") inputquery;"
             )
@@ -40,8 +41,8 @@ class Task:
                     "insert into "
                     + self.localtable
                     + "_"
-                    + str(kid)
-                    + " select "+str(kid)+" as node_id, * from ("
+                    + str(self.node_id)
+                    + " select "+str(self.node_id)+" as node_id, * from ("
                     + sqlscript
                     + ") inputquery;"
             )
@@ -78,8 +79,8 @@ class Task:
 
         query = "drop table if exists %s; create table %s (node_id INT, %s);" % (
 
-            self.localtable + "_" + str(0),
-            self.localtable + "_" + str(0),
+            self.localtable + "_" + str(self.node_id),
+            self.localtable + "_" + str(self.node_id),
             self.local_schema,
         )
         await self.db_objects["local"]["async_con"].cursor().execute(query)
@@ -93,6 +94,10 @@ class Task:
             self.attributes,
             self.globalresulttable
         )
+
+    async def init_global_remote_table(self, global_schema):
+        await self.transfer_runner.initialize_local(global_schema)
+
 
     async def init_tables(self, local_schema, global_schema):
         self.local_schema = local_schema
@@ -154,7 +159,7 @@ class Task:
 
     #### run a task on all local nodes and sets up the transfer of the results to global node
 
-    async def task_local(self, schema, sqlscript):
+    async def task_local(self, schema, static_schema, sqlscript):
         t1 = current_time()
        # insert = False
        # if 'iternum'  in  schema:
@@ -163,8 +168,13 @@ class Task:
        #     self.local_schema = schema
        #     await self._initialize_local_schema()
        #     await self.transfer_runner.initialize_local(self.local_schema)
+        if int(static_schema):
+            await self._local_execute(self.db_objects["local"]["async_con"], sqlscript, 0)
+        else:
+            self.local_schema = schema
+            await self._initialize_local_schema()
+            await self._local_execute(self.db_objects["local"]["async_con"], sqlscript, 0)
 
-        await self._local_execute(self.db_objects["local"]["async_con"], 0, sqlscript, 0)
 
 
         ## for debug, print local contents

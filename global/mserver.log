@@ -1,10 +1,32 @@
-2020-12-13 23:04:25,579 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
-2020-12-13 23:04:25,580 INFO 200 POST / (127.0.0.1) 4005.90ms
-2020-12-13 23:04:30,694 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
-2020-12-13 23:04:30,694 INFO 200 POST / (127.0.0.1) 3919.20ms
-2020-12-13 23:04:36,019 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
-2020-12-13 23:04:36,020 INFO 200 POST / (127.0.0.1) 3995.18ms
-2020-12-13 23:04:42,854 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
-2020-12-13 23:04:42,854 INFO 200 POST / (127.0.0.1) 3964.63ms
-2020-12-13 23:04:48,370 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
-2020-12-13 23:04:48,370 INFO 200 POST / (127.0.0.1) 3911.59ms
+2020-12-14 13:46:20,268 DEBUG (MadisServer::post) QueryExecutionException: &2 0 -1 1020524 0 4000 0
+!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser4272542_1'
+!25005!Current transaction is aborted (please ROLLBACK)
+
+2020-12-14 13:46:20,268 INFO 200 POST / (127.0.0.1) 234.20ms
+2020-12-14 13:46:20,268 ERROR Uncaught exception POST / (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:7779', method='POST', uri='/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/home/openaire/.local/lib/python3.7/site-packages/tornado/web.py", line 1703, in _execute
+    result = await result
+  File "mserver.py", line 52, in post
+    result = await run_algorithm.run(algorithm, params, db_objects)
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/run_algorithm.py", line 38, in run
+    result = await scheduler_instance.schedule()
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/scheduler.py", line 52, in schedule
+    result = await self.run_global(self.step, task['run_global'])
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/scheduler.py", line 118, in run_global
+    result = await self.task_executor.task_global(step, self.global_schema, step_global['sqlscript'])
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/task_executor.py", line 146, in task_global
+    result = await cur.execute(query)
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/cursors.py", line 174, in execute
+    block = await self.connection.execute(query)
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/connections.py", line 277, in execute
+    return await self.command("s" + query + "\n;")
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/connections.py", line 282, in command
+    return await self.mapi.cmd(command)
+  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/mapi_async.py", line 297, in cmd
+    raise exception('\n'.join(lines))
+pymonetdb.exceptions.OperationalError: &2 0 -1 1020524 0 4000 0
+!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser4272542_1'
+!25005!Current transaction is aborted (please ROLLBACK)
+

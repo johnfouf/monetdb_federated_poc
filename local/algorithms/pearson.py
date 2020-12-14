@@ -1,20 +1,5 @@
 udf_list = []
-udf_list.append('''
-CREATE or replace FUNCTION pearson_local(val1 FLOAT, val2 FLOAT)
-RETURNS TABLE(sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT)
-LANGUAGE PYTHON {
-    result = {}
-    X = val1
-    Y = val2
-    result["sx"] = X.sum(axis=0)
-    result["sxx"] = (X ** 2).sum(axis=0)
-    result["sxy"] = (X * Y).sum(axis=0)
-    result["sy"] = Y.sum(axis=0)
-    result["syy"] = (Y ** 2).sum(axis=0)
-    result["n"] = X.size
-    return result
-};
-''')
+
 udf_list.append('''
 CREATE or replace AGGREGATE pearson_global(sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT)
 RETURNS FLOAT
@@ -31,8 +16,28 @@ LANGUAGE PYTHON {
 };
 ''')
 
+udf_list.append('''
+CREATE or replace FUNCTION pearson_local(val1 FLOAT, val2 FLOAT)
+RETURNS TABLE(sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT)
+LANGUAGE PYTHON {
+    result = {}
+    X = val1
+    Y = val2
+    result["sx"] = X.sum(axis=0)
+    result["sxx"] = (X ** 2).sum(axis=0)
+    result["sxy"] = (X * Y).sum(axis=0)
+    result["sy"] = Y.sum(axis=0)
+    result["syy"] = (Y ** 2).sum(axis=0)
+    result["n"] = X.size
+    return result
+};
+''')
+
+
 class Algorithm:
     def algorithm(self, data_table, merged_local_results,  parameters, attributes, result_table):
+        yield {"set_schema": {"local": "sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT",
+                              "global": "result FLOAT"}}
         yield self._local(data_table, attributes)
         yield self._global(merged_local_results)
 

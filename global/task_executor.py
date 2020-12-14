@@ -27,7 +27,7 @@ class Task:
 
     async def _initialize_local(self, step):
         _local_execute_calls = [
-            local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0)
+            local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0, id)
             for id, local in enumerate(self.db_objects["local"])
         ]
         await asyncio.gather(*_local_execute_calls)
@@ -72,8 +72,8 @@ class Task:
     async def createlocalviews(self, step):
         t1 = current_time()
         _create_view_calls = [
-            local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0)
-            for local in self.db_objects["local"]
+            local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0, id )
+            for id,local in enumerate(self.db_objects["local"])
         ]
         await asyncio.gather(*_create_view_calls)
         print("time " + str(current_time() - t1))
@@ -89,7 +89,7 @@ class Task:
             await self.transfer_runner.initialize_global(self.local_schema)
 
         _local_execute_calls = [
-            local['async_con'].submit(self.algorithm_name, step, self.table_id, self.params, static_schema)
+            local['async_con'].submit(self.algorithm_name, step, self.table_id, self.params, static_schema, id)
             for id, local in enumerate(self.db_objects["local"])
         ]
         await asyncio.gather(*_local_execute_calls)
@@ -104,7 +104,7 @@ class Task:
             self.global_schema = schema
             await self._initialize_global_schema()
             _local_execute_calls = [
-                local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0)
+                local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0, id)
                 for id, local in enumerate(self.db_objects["local"])
             ]
             await asyncio.gather(*_local_execute_calls)

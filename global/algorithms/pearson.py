@@ -33,6 +33,8 @@ LANGUAGE PYTHON {
 
 class Algorithm:
     def algorithm(self, data_table, merged_local_results,  parameters, attributes, result_table):
+        yield {"set_schema": {"local": "sx FLOAT, sxx FLOAT, sxy FLOAT, sy FLOAT, syy FLOAT, n INT",
+                              "global": "result FLOAT"}}
         yield self._local(data_table, attributes)
         yield self._global(merged_local_results)
 
