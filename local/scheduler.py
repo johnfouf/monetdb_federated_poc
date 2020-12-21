@@ -8,18 +8,18 @@
 # Most of the time, the scheduler is the most complicated part of a system which may also introduce significant overheads,
 # thus it should be as optimal as possible and keep it as simple as possible so that it is fast and extensible.
 
-#import pickle
 states = {}
 
 class Scheduler:
-    def __init__(self, task_executor, algorithm, step, schema):
+    def __init__(self, task_executor, algorithm, step, schema, states):
         self.task_executor = task_executor
         # if static schema is False the algorithm defines dynamically the returned schema in each step.
         # otherwise the algorithm sets a static schema for local/global tasks and all the next local global tasks follow
         # the defined static schema.
-        print("step: "+step)
+        print("step: "+str(step))
         self.step = int(step)
 
+        print(states)
         self.static_schema = int(schema)
         self.schema = {}
         self.local_schema = None
@@ -30,14 +30,57 @@ class Scheduler:
 
         ## bind parameters before pushing them to the algorithm - necessary step to avoid sql injections
         self.parameters = task_executor.bindparameters(task_executor.parameters)
-        self.task_generator = task_executor.create_task_generator(algorithm)
+
+        if 'task_generator' not in states:
+            self.task_generator = task_executor.create_task_generator(algorithm)
+            states['task_generator'] = self.task_generator
+        else:
+            self.task_generator = states['task_generator']
+        self.states = states
+
 
     async def schedule(self):
         if self.step == 0:
             await self.task_executor.createlocalviews()
-        else:
-            i = 1
+        elif self.step > 0:
             for task in self.task_generator:
+                if 'run_global' in task:
+                    if self.states['termination']:
+                        pass
+                    else:
+                        next(self.task_generator)
+                        task = self.task_generator.send(await self.task_executor.get_global_result())
+                if 'set_schema' in task:
+                    await self.set_schema(task['set_schema'])
+                    break
+                elif 'define_udf' in task:
+                    try:
+                        await self.define_udf(task['define_udf'])
+                    except:
+                        raise Exception('''online UDF definition is not implemented yet''')
+                    break
+                elif 'run_local' in task:
+                    #if self.states['termination']:
+                    await self.run_local(task['run_local'])
+                    break
+                    #else:
+                    #    await self.run_local(self.task_generator.send(await self.task_executor.get_global_result()))
+
+
+            self.states['step'] = self.step
+        elif self.step == -1: ## cleanup
+            await self.task_executor.clean_up()
+        return 1
+
+
+    async def schedule1(self):
+        if self.step == 0:
+            await self.task_executor.createlocalviews()
+            self.states['step'] = 0
+        elif self.step > 0:
+            i = self.states['step']+1
+            for task in self.task_generator:
+
                 if i == self.step:
                     if 'set_schema' in task:
                         await self.set_schema(task['set_schema'])
@@ -47,18 +90,29 @@ class Scheduler:
                         except:
                             raise Exception('''online UDF definition is not implemented yet''')
                     elif 'run_local' in task:
-                        await self.run_local(task['run_local'])
+                        if self.states['termination']:
+                            await self.run_local(task['run_local'])
+                        else:
+                            await self.run_local(self.task_generator.send(await self.task_executor.get_global_result()))
+
                     elif 'run_global' in task:
                         await self.run_global(task['run_global'])
+                    break
 
                 i+=1
-
+            self.states['step'] = self.step
+        elif self.step == -1: ## cleanup
+            await self.task_executor.clean_up()
         return 1
 
     async def set_schema(self, schema):
         self.schema = schema
         if 'termination' in schema['global']:
             self.termination_in_dbms = True
+            self.states['termination'] = True
+        else:
+            self.termination_in_dbms = False
+            self.states['termination'] = False
         await self.task_executor.init_tables(schema['local'], schema['global'])
 
     async def define_udf(self, udf):

@@ -183,6 +183,12 @@ class Task:
         print("time " + str(current_time() - t1))
 
 
+    async def get_global_result(self):
+        cur = self.db_objects["local"]["async_con"].cursor()
+        query = f'select * from {self.globalresulttable};'
+        await cur.execute(query)
+        return await cur.fetchall()
+
 
     async def register_udf(self, udf):
         # this is not implemented
@@ -191,4 +197,4 @@ class Task:
 
 
     async def clean_up(self):
-        await self.db_objects["local"]["async_con"].clean_tables(self.db_objects, self.localtable, self.viewlocaltable)
+        await self.db_objects["local"]["async_con"].clean_tables(self.db_objects, self.globaltable, self.localtable+"_"+str(self.node_id), self.viewlocaltable+"_"+str(self.node_id), self.globalresulttable)

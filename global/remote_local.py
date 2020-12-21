@@ -8,7 +8,8 @@ class Worker:
     async def submit(self, algorithm_name, step, table_id, params, schema, node_id):
         http_client = httpclient.AsyncHTTPClient()
         try:
-            body = f'algorithm={algorithm_name}&hash={table_id}&step={step}&node_id={node_id}&schema={schema}&params={json.dumps(params)}'
+            body = 'params={"algorithm":"'+algorithm_name+'","hash":"'+str(table_id)+'","step":'+str(step)+',"node_id":'+str(node_id)+',"schema":'+str(schema)+',"params":'+json.dumps(params)+'}'
+            print(body)
             response = await http_client.fetch(self.ip, method="POST", body=body)
         except Exception as e:
             print("Error: %s" % e)

@@ -1,9 +1,9 @@
-2020-12-14 13:46:20,268 DEBUG (MadisServer::post) QueryExecutionException: &2 0 -1 1020524 0 4000 0
-!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser4272542_1'
+2020-12-21 15:24:55,798 DEBUG (MadisServer::post) QueryExecutionException: &2 0 -1 1216970 0 0 0
+!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser2351089_1'
 !25005!Current transaction is aborted (please ROLLBACK)
 
-2020-12-14 13:46:20,268 INFO 200 POST / (127.0.0.1) 234.20ms
-2020-12-14 13:46:20,268 ERROR Uncaught exception POST / (127.0.0.1)
+2020-12-21 15:24:55,799 INFO 200 POST / (127.0.0.1) 95.96ms
+2020-12-21 15:24:55,799 ERROR Uncaught exception POST / (127.0.0.1)
 HTTPServerRequest(protocol='http', host='127.0.0.1:7779', method='POST', uri='/', version='HTTP/1.1', remote_ip='127.0.0.1')
 Traceback (most recent call last):
   File "/home/openaire/.local/lib/python3.7/site-packages/tornado/web.py", line 1703, in _execute
@@ -26,7 +26,7 @@ Traceback (most recent call last):
     return await self.mapi.cmd(command)
   File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/mapi_async.py", line 297, in cmd
     raise exception('\n'.join(lines))
-pymonetdb.exceptions.OperationalError: &2 0 -1 1020524 0 4000 0
-!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser4272542_1'
+pymonetdb.exceptions.OperationalError: &2 0 -1 1216970 0 0 0
+!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser2351089_1'
 !25005!Current transaction is aborted (please ROLLBACK)
 

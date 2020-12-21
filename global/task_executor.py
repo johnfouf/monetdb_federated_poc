@@ -155,3 +155,8 @@ class Task:
         await self.db_objects["global"]["async_con"].clean_tables(
             self.db_objects, self.globaltable, self.localtable, self.viewlocaltable, self.globalresulttable
         )
+        _local_execute_calls = [
+            local["async_con"].submit(self.algorithm_name, -1, self.table_id, self.params, 0, id)
+            for id, local in enumerate(self.db_objects["local"])
+        ]
+        await asyncio.gather(*_local_execute_calls)

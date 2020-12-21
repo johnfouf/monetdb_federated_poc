@@ -24,7 +24,7 @@ class Algorithm: # iteration condition in sql
         select count(*) as N, centx, centy, sum(datax) as datax, sum(datay) as datay from (
             select row_number() over (
                                       partition by datax, datay 
-                                      order by EUCLIDEAN_DISTANCE(datax, datay ,centx, centy) --SQRT(POWER(datax-centx,2) + POWER(datay-centy,2))
+                                      order by SQRT(POWER(datax-centx,2) + POWER(datay-centy,2))
                                      ) as id, datax, datay, centx, centy
             from (select {attr[0]} as datax, {attr[1]} as datay from {data_table}) as data_points, {result_table}
         ) expectations where id=1 group by centx, centy

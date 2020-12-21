@@ -5,6 +5,11 @@ import run_algorithm
 import tornado.web
 from tornado.log import enable_pretty_logging
 from tornado.options import define, options
+import json
+import importlib
+import settings
+
+DEBUG = settings.DEBUG
 
 WEB_SERVER_PORT = 7676
 define("port", default=WEB_SERVER_PORT, help="run on the given port", type=int)
@@ -38,21 +43,45 @@ class MainHandler(BaseHandler):
     app_log.addHandler(hdlr)
     gen_log.addHandler(hdlr)
     dbs = connections.Connections()
+    states = {}
+
+    def get_package(self,algorithm):
+        try:
+            mpackage = "algorithms"
+            importlib.import_module(mpackage)
+            algo = importlib.import_module("." + algorithm, mpackage)
+            if DEBUG:
+                importlib.reload(algo)
+        except ModuleNotFoundError:
+            raise Exception(f"`{algorithm}` does not exist in the algorithms library")
+        return algo
 
     async def post(self):
         ## get params, algorithm contains the name of the algorithm, params is a valid json file
-        algorithm = self.get_argument("algorithm")
-        hash_value = self.get_argument("hash")
-        step = self.get_argument("step")
-        params = self.get_argument("params")
-        static_schema = self.get_argument("schema")
-        node_id = self.get_argument("node_id")
+        print(self.get_argument("params"))
+        parameters = json.loads(self.get_argument("params"))
+        algorithm = parameters["algorithm"]
+        hash_value = parameters["hash"]
+        step = parameters["step"]
+        params = parameters["params"]
+        static_schema = parameters["schema"]
+        node_id = parameters["node_id"]
+
+        if hash_value in self.states:
+            db_objects = self.states[hash_value]['db_objects']
+            algorithm_instance =  self.states[hash_value]['algorithm']
         #### new connection per request - required since connection objects are not thread safe at the time
-        await self.dbs.initialize()
-        db_objects = await self.dbs.acquire()
+        else:
+            await self.dbs.initialize()
+            db_objects = await self.dbs.acquire()
+            algorithm_instance = self.get_package(algorithm).Algorithm()
+            self.states[hash_value] = {}
+            self.states[hash_value]['db_objects'] = db_objects
+            self.states[hash_value]['algorithm'] = algorithm_instance
+
 
         try:
-            result = await run_algorithm.run(algorithm, params, hash_value, step, static_schema, node_id, db_objects)
+            result = await run_algorithm.run(algorithm_instance, params, hash_value, step, static_schema, node_id, db_objects, self.states[hash_value])
             self.write("{}".format(result))
         except Exception as e:
             # raise tornado.web.HTTPError(status_code=500,log_message="...the log message??")
@@ -60,15 +89,19 @@ class MainHandler(BaseHandler):
                 "(MadisServer::post) QueryExecutionException: {}".format(str(e))
             )
             # print "QueryExecutionException ->{}".format(str(e))
-            await self.dbs.release(db_objects)
+            if step == -1:
+                self.states.pop(hash_value)
+                await self.dbs.release(db_objects)
             self.write("Error: " + str(e))
             self.finish()
             raise
 
-        await self.dbs.release(db_objects)
         self.logger.debug("(MadisServer::post) str_result-> {}".format(result))
         # self.write("{}".format(result))
         self.finish()
+        if step == -1:
+            self.states.pop(hash_value)
+            await self.dbs.release(db_objects)
 
 def main(args):
     sockets = tornado.netutil.bind_sockets(options.port)
