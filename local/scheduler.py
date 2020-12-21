@@ -50,12 +50,19 @@ class Scheduler:
                 if 'run_global' in task:
                     if 'schema' in task['run_global']:
                         await self.run_global(task['run_global'])
+                        
+                        if self.states['termination']:
+                            pass
+                        else:
+                            next(self.task_generator)
+                            task = self.task_generator.send(await self.task_executor.get_global_result())
                         break
                     if self.states['termination']:
                         pass
                     else:
                         next(self.task_generator)
-                        task = self.task_generator.send(await self.task_executor.get_global_result())
+                        task = self.task_generator.send(await
+                        self.task_executor.get_global_result())
                 if 'set_schema' in task:
                     await self.set_schema(task['set_schema'])
                     break
