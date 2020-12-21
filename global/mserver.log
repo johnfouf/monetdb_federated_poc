@@ -1,32 +1,42 @@
-2020-12-21 15:24:55,798 DEBUG (MadisServer::post) QueryExecutionException: &2 0 -1 1216970 0 0 0
-!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser2351089_1'
-!25005!Current transaction is aborted (please ROLLBACK)
-
-2020-12-21 15:24:55,799 INFO 200 POST / (127.0.0.1) 95.96ms
-2020-12-21 15:24:55,799 ERROR Uncaught exception POST / (127.0.0.1)
-HTTPServerRequest(protocol='http', host='127.0.0.1:7779', method='POST', uri='/', version='HTTP/1.1', remote_ip='127.0.0.1')
-Traceback (most recent call last):
-  File "/home/openaire/.local/lib/python3.7/site-packages/tornado/web.py", line 1703, in _execute
-    result = await result
-  File "mserver.py", line 52, in post
-    result = await run_algorithm.run(algorithm, params, db_objects)
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/run_algorithm.py", line 38, in run
-    result = await scheduler_instance.schedule()
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/scheduler.py", line 52, in schedule
-    result = await self.run_global(self.step, task['run_global'])
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/scheduler.py", line 118, in run_global
-    result = await self.task_executor.task_global(step, self.global_schema, step_global['sqlscript'])
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/task_executor.py", line 146, in task_global
-    result = await cur.execute(query)
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/cursors.py", line 174, in execute
-    block = await self.connection.execute(query)
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/connections.py", line 277, in execute
-    return await self.command("s" + query + "\n;")
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/sql/connections.py", line 282, in command
-    return await self.mapi.cmd(command)
-  File "/home/openaire/exareme2_runtime/monetdb_federated_poc/global/aiopymonetdb/mapi_async.py", line 297, in cmd
-    raise exception('\n'.join(lines))
-pymonetdb.exceptions.OperationalError: &2 0 -1 1216970 0 0 0
-!(mapi:monetdb://monetdb@88.197.53.136/voc10) Table: missing 'sys.localuser2351089_1'
-!25005!Current transaction is aborted (please ROLLBACK)
-
+2020-12-21 15:47:05,223 DEBUG (MadisServer::post) str_result-> [(3.354401351011659, 3.5556263802293255), (3.0166319067912113, 3.194530121603865), (3.723202817083833, 3.947394161930731)]
+2020-12-21 15:47:05,224 INFO 200 POST / (127.0.0.1) 2972.96ms
+2020-12-21 15:47:16,286 DEBUG (MadisServer::post) str_result-> [(3.354297799004618, 3.555506542198989), (3.0165584018596614, 3.194450567966133), (3.723077123532378, 3.947281362000543)]
+2020-12-21 15:47:16,287 INFO 200 POST / (127.0.0.1) 2858.40ms
+2020-12-21 15:47:30,751 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:47:30,751 INFO 200 POST / (127.0.0.1) 3802.88ms
+2020-12-21 15:47:39,547 DEBUG (MadisServer::post) str_result-> [(3.354401351011659, 3.5556263802293255), (3.0166319067912113, 3.194530121603865), (3.723202817083833, 3.947394161930731)]
+2020-12-21 15:47:39,547 INFO 200 POST / (127.0.0.1) 2826.08ms
+2020-12-21 15:48:12,126 DEBUG (MadisServer::post) str_result-> [(3.354401351011659, 3.5556263802293255), (3.0166319067912113, 3.194530121603865), (3.723202817083833, 3.947394161930731)]
+2020-12-21 15:48:12,127 INFO 200 POST / (127.0.0.1) 2853.28ms
+2020-12-21 15:48:19,839 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:48:19,839 INFO 200 POST / (127.0.0.1) 3698.88ms
+2020-12-21 15:48:37,530 DEBUG (MadisServer::post) str_result-> [(3.3544769560847376, 3.55571168216334), (3.0166852117950658, 3.1945650011284084), (3.7232909205413494, 3.947509432775227)]
+2020-12-21 15:48:37,530 INFO 200 POST / (127.0.0.1) 2831.15ms
+2020-12-21 15:49:19,463 DEBUG (MadisServer::post) str_result-> [(3.3543544877395854, 3.5555624775239516), (3.0165907006638135, 3.1944839212041787), (3.7231376779444583, 3.9473564117285966)]
+2020-12-21 15:49:19,463 INFO 200 POST / (127.0.0.1) 2913.23ms
+2020-12-21 15:50:49,476 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:50:49,476 INFO 200 POST / (127.0.0.1) 3839.71ms
+2020-12-21 15:51:26,463 DEBUG (MadisServer::post) str_result-> [(3.354401351011659, 3.5556263802293255), (3.0166319067912113, 3.194530121603865), (3.723202817083833, 3.947394161930731)]
+2020-12-21 15:51:26,463 INFO 200 POST / (127.0.0.1) 2942.79ms
+2020-12-21 15:51:46,682 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:51:46,683 INFO 200 POST / (127.0.0.1) 3919.82ms
+2020-12-21 15:52:46,837 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:52:46,837 INFO 200 POST / (127.0.0.1) 3843.33ms
+2020-12-21 15:53:01,191 DEBUG (MadisServer::post) str_result-> [(3.3552535850280565, 3.556600967127754), (3.017363689696137, 3.1951996846495123), (3.724032221615365, 3.9483015694276533)]
+2020-12-21 15:53:01,191 INFO 200 POST / (127.0.0.1) 3934.62ms
+2020-12-21 15:53:07,981 DEBUG (MadisServer::post) str_result-> [(None,)]
+2020-12-21 15:53:07,982 INFO 200 POST / (127.0.0.1) 1815.42ms
+2020-12-21 15:53:39,022 DEBUG (MadisServer::post) str_result-> [(0.9509737964323964,)]
+2020-12-21 15:53:39,023 INFO 200 POST / (127.0.0.1) 71.23ms
+2020-12-21 15:53:47,032 DEBUG (MadisServer::post) str_result-> [(0.9509737964323964,)]
+2020-12-21 15:53:47,032 INFO 200 POST / (127.0.0.1) 70.42ms
+2020-12-21 15:54:35,331 DEBUG (MadisServer::post) str_result-> [(None,)]
+2020-12-21 15:54:35,331 INFO 200 POST / (127.0.0.1) 1739.09ms
+2020-12-21 15:55:23,967 DEBUG (MadisServer::post) str_result-> [(None,)]
+2020-12-21 15:55:23,967 INFO 200 POST / (127.0.0.1) 1107.08ms
+2020-12-21 15:55:54,847 DEBUG (MadisServer::post) str_result-> [(None,)]
+2020-12-21 15:55:54,847 INFO 200 POST / (127.0.0.1) 1299.36ms
+2020-12-21 16:00:22,233 DEBUG (MadisServer::post) str_result-> [(2,)]
+2020-12-21 16:00:22,233 INFO 200 POST / (127.0.0.1) 1050.25ms
+2020-12-21 16:00:32,367 DEBUG (MadisServer::post) str_result-> [(2,)]
+2020-12-21 16:00:32,367 INFO 200 POST / (127.0.0.1) 661.66ms

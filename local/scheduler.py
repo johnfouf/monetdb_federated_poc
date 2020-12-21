@@ -28,6 +28,7 @@ class Scheduler:
         # to check the condition in the dbms an additional attribute named `termination` is required in global schema
         self.termination_in_dbms = False
 
+
         ## bind parameters before pushing them to the algorithm - necessary step to avoid sql injections
         self.parameters = task_executor.bindparameters(task_executor.parameters)
 
@@ -37,6 +38,8 @@ class Scheduler:
         else:
             self.task_generator = states['task_generator']
         self.states = states
+        if 'termination' not in self.states:
+            self.states['termination'] = False
 
 
     async def schedule(self):
@@ -45,6 +48,9 @@ class Scheduler:
         elif self.step > 0:
             for task in self.task_generator:
                 if 'run_global' in task:
+                    if 'schema' in task['run_global']:
+                        await self.run_global(task['run_global'])
+                        break
                     if self.states['termination']:
                         pass
                     else:
@@ -73,37 +79,6 @@ class Scheduler:
         return 1
 
 
-    async def schedule1(self):
-        if self.step == 0:
-            await self.task_executor.createlocalviews()
-            self.states['step'] = 0
-        elif self.step > 0:
-            i = self.states['step']+1
-            for task in self.task_generator:
-
-                if i == self.step:
-                    if 'set_schema' in task:
-                        await self.set_schema(task['set_schema'])
-                    elif 'define_udf' in task:
-                        try:
-                            await self.define_udf(task['define_udf'])
-                        except:
-                            raise Exception('''online UDF definition is not implemented yet''')
-                    elif 'run_local' in task:
-                        if self.states['termination']:
-                            await self.run_local(task['run_local'])
-                        else:
-                            await self.run_local(self.task_generator.send(await self.task_executor.get_global_result()))
-
-                    elif 'run_global' in task:
-                        await self.run_global(task['run_global'])
-                    break
-
-                i+=1
-            self.states['step'] = self.step
-        elif self.step == -1: ## cleanup
-            await self.task_executor.clean_up()
-        return 1
 
     async def set_schema(self, schema):
         self.schema = schema
@@ -128,9 +103,15 @@ class Scheduler:
     async def run_global(self, step_global):
         if not self.static_schema and 'schema' not in step_global:
             raise Exception('''Schema definition is missing''')
-
-        result = await self.task_executor.init_global_remote_table(step_global['schema'])
-        return result
+        if 'termination' in step_global['schema']:
+            self.termination_in_dbms = True
+            self.states['termination'] = True
+        else:
+            self.termination_in_dbms = False
+            self.states['termination'] = False
+        if not self.static_schema:
+            result = await self.task_executor.init_global_remote_table(step_global['schema'])
+            return result
 
     def termination(self, global_result):
         return global_result[len(global_result)-1][0]
