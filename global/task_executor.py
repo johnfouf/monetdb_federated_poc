@@ -22,9 +22,6 @@ class Task:
         self.table_id = table_id
         self.algorithm_name = algorithm_name
 
-
-
-
     async def _initialize_local(self, step):
         _local_execute_calls = [
             local["async_con"].submit(self.algorithm_name, step, self.table_id, self.params, 0, id)
@@ -150,6 +147,11 @@ class Task:
 
         return await cur.fetchall()
 
+    async def get_global_result(self):
+        cur = self.db_objects["global"]["async_con"].cursor()
+        query = f'select * from {self.globalresulttable};'
+        await cur.execute(query)
+        return await cur.fetchall()
 
     async def clean_up(self):
         await self.db_objects["global"]["async_con"].clean_tables(

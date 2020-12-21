@@ -186,15 +186,8 @@ class Pool(asyncio.AbstractServer):
 
     async def release(self, conn):
         """Release free connection back to the connection pool."""
-        assert conn in self._used, (conn, self._used)
         self._used.remove(conn)
-        if not conn.closed:
-            if self._closing:
-                await conn.close()
-            else:
-                self._used.remove(conn)
-                self._free.append(conn)
-            await self._wakeup()
+        self._free.append(conn)
 
 
 
