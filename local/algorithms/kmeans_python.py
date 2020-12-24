@@ -23,8 +23,7 @@ class Algorithm: # iteration condition in python
         yield {"set_schema":{"local" : "N INT, centx FLOAT, centy FLOAT, datax FLOAT, datay FLOAT", "global" : "centx FLOAT, centy FLOAT"}}
         self.data["centroids"] = []
         for iternum in range(1000):
-            yield self.global_aggregation(merged_local_results, parameters)
-            new_centroids = yield
+            new_centroids = yield self.global_aggregation(merged_local_results, parameters)
             if new_centroids != self.data["centroids"]: self.data["centroids"] = new_centroids
             else: break
             yield self.local_expectation(data_table, attributes, result_table)

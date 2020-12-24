@@ -51,8 +51,6 @@ class Scheduler:
                     elif 'run_global' in task:
                         result = await self.run_global(self.step, task['run_global'])
                         if not self.termination_in_dbms:
-                            next(self.task_generator)
-                            self.step += 1
                             task = self.task_generator.send(result)
                         else:
                             if self.termination(result):
@@ -120,3 +118,10 @@ class Scheduler:
 
     def termination(self, global_result):
         return global_result[len(global_result)-1][0]
+
+
+def generator():
+    lala = "I am a generator and I yield"
+    response = yield lala
+    print("I am a generator and I got", response)
+    return "goodbye"

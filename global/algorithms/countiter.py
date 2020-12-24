@@ -5,8 +5,7 @@ class Algorithm:
 
         for iternum in range(60):
             yield self._local(iternum, data_table, parameters, attributes, result_table)
-            yield self._global(iternum, merged_local_results, parameters, attributes)
-            res = yield
+            res = yield self._global(iternum, merged_local_results, parameters, attributes)
             if res[0][0] > 100000000:
                 break
 
